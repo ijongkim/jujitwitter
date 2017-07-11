@@ -1,7 +1,6 @@
 const express = require('express')
 const dotenv = require('dotenv').config()
 const request = require('request')
-const bignum = require('bignum')
 const utils = require('./utils.js')
 const app = express()
 
@@ -9,7 +8,7 @@ const tKey = process.env.KEY
 const tSecret = process.env.SECRET
 const tCombo = tKey + ':' + tSecret
 const tBase = new Buffer(tCombo).toString('base64')
-const token = ''
+const token = 'AAAAAAAAAAAAAAAAAAAAAP681QAAAAAAL73UMlXKvOWiRHoWi0QY60Z90mQ%3D31GOtW4wDnMQJucsqXTbu721lEKCgHK0SNfwtujifi25aWr1g4'
 
 // request token generated, need to request bearer token
 function getBearerToken (base, token, callback) {
@@ -35,10 +34,20 @@ function getBearerToken (base, token, callback) {
   })
 }
 
-getBearerToken(tBase, token, function (output) { console.log(output) })
+// getBearerToken(tBase, token)
 
 app.get('/', function (req, res) {
   res.send('Hello World!')
+})
+
+app.get('/getTweets', function (req, res) {
+  if (token) {
+    console.log('Requesting with token:', token)
+    utils.getTweets(token, 'neiltyson', [], 0, 3200, null, function (output) { console.log(output.length, 'tweets received') }, function (output) { console.log(output) })
+  } else {
+    console.log('Requesting token...')
+    getBearerToken(tBase, token, function (output) { console.log(output) })
+  }
 })
 
 app.listen(3000, function () {
