@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Welcome to JujiTwitter!</title>
+  <title>Welcome to JujiTwitter!</title>
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+  <script src="/fetchRender.js"></script>
 </head>
 <body>
   <div id="mainContainer">
     <div id="menu">
       <form action="/getTweets" method="post">
         Enter the username:<br>
-        <input type="text" name="username" placeholder="@username"><br>
-        <input type="submit" value="Submit">
+        <input id="submitUser" type="text" name="username" placeholder="@username">
+        <span id="submitButton">Get Tweets!</span>
       </form>
     </div>
     <div id="displayContainer">
       Content goes here
     </div>
   </div>
+  <script>$(document).ready(bindButtons)</script>
 </body>
 </html>
