@@ -43,7 +43,7 @@ app.get('/', function (req, res) {
 app.get('/getTweets', function (req, res) {
   if (token) {
     console.log('Requesting with token:', token)
-    utils.getTweets(token, 'neiltyson', [], 0, 3200, null, function (output) { console.log(output.length, 'tweets received') }, function (output) { console.log(output) })
+    utils.getTweets(token, 'neiltyson', [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) })
   } else {
     console.log('Requesting token...')
     getBearerToken(tBase, token, function (output) { console.log(output) })
