@@ -20,10 +20,15 @@ function getTweets (token, username, list, currCount, maxCount, maxID, callback,
       let tweets = JSON.parse(body)
       // console.log(error, body)
       if (!error && Array.isArray(tweets)) {
-        list = list.concat(tweets)
-        console.log(list.length, 'tweets')
-        let maxID = bignum(tweets[tweets.length - 1].id_str).sub(1)
-        getTweets(token, username, list, currCount + 200, maxCount, maxID, callback, errorHandle)
+        if (tweets.length === 0) {
+          console.log('Starting processing')
+          callback(list)
+        } else {
+          list = list.concat(tweets)
+          console.log(list.length, 'tweets')
+          let maxID = bignum(tweets[tweets.length - 1].id_str).sub(1)
+          getTweets(token, username, list, currCount + 200, maxCount, maxID, callback, errorHandle)
+        }
       } else {
         let message = 'Unspecified Error'
         if (tweets.errors) {
