@@ -203,6 +203,11 @@ function processTweets (tweetList, max, callback) {
   callback(printTweets(tweetList, max))
 }
 
+function cleanUsername (username, max) {
+  let name = username.replace(/[^a-zA-Z0-9_]/g, '')
+  return name.slice(0, max)
+}
+
 module.exports.getTweets = getTweets
 module.exports.cleanTweet = cleanTweet
 module.exports.isStopword = isStopword
@@ -215,3 +220,4 @@ module.exports.scoreTweets = scoreTweets
 module.exports.sortTweets = sortTweets
 module.exports.printTweets = printTweets
 module.exports.processTweets = processTweets
+module.exports.cleanUsername = cleanUsername

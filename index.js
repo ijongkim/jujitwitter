@@ -1,6 +1,7 @@
 const express = require('express')
 const dotenv = require('dotenv').config()
 const request = require('request')
+const bodyParser = require('body-parser')
 const utils = require('./utils.js')
 const app = express()
 
@@ -35,15 +36,13 @@ function getBearerToken (base, token, callback) {
 }
 
 // getBearerToken(tBase, token)
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(express.static('public'))
 
-app.get('/', function (req, res) {
-  res.send('Hello World!')
-})
-
-app.get('/getTweets', function (req, res) {
+app.post('/getTweets', function (req, res) {
   if (token) {
     console.log('Requesting with token:', token)
-    utils.getTweets(token, 'neiltyson', [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) })
+    utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) })
   } else {
     console.log('Requesting token...')
     getBearerToken(tBase, token, function (output) { console.log(output) })
