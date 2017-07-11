@@ -1,0 +1,27 @@
+{
+  "name": "jujitwitter",
+  "version": "1.0.0",
+  "description": "Pull the Top 10 representative tweets of a given Twitter user",
+  "main": "node index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ijongkim/jujitwitter.git"
+  },
+  "keywords": [
+    "twitter"
+  ],
+  "author": "Innie Kim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ijongkim/jujitwitter/issues"
+  },
+  "homepage": "https://github.com/ijongkim/jujitwitter#readme",
+  "dependencies": {
+    "bignum": "^0.12.5",
+    "express": "^4.15.3"
+  }
+}
