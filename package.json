@@ -4,7 +4,7 @@
   "description": "Pull the Top 10 representative tweets of a given Twitter user",
   "main": "node index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

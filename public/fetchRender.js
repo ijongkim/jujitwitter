@@ -75,7 +75,7 @@ function renderUser (user) {
                         <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> ${user.location}<br>\
                         <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span> ${user.followers_count}<br>\
                         <span class="glyphicon glyphicon-search" aria-hidden="true"></span> ${user.friends_count}<br>\
-                        <span class="glyphicon glyphicon-globe" aria-hidden="true"></span> <a href="${urlInfo.expanded_url}">${urlInfo.display_url}</a>`
+                        <span class="glyphicon glyphicon-globe" aria-hidden="true"></span> <a href="${urlInfo.expanded_url}">${urlInfo.display_url}</a><br><br>`
 
   $user.append(userPicAndStats)
   $('#userProfile').append($user)
