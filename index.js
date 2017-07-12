@@ -53,6 +53,6 @@ app.post('/getTweets', function (req, res) {
   }
 })
 
-app.listen(3000, function () {
-  console.log('Server running on 3000')
+app.listen(process.env.PORT, function () {
+  console.log('Server running on', process.env.PORT)
 })
