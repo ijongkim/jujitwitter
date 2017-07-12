@@ -45,8 +45,8 @@ function cleanTweet (original) {
   let tweet = original.slice()
   tweet = tweet.replace(/[\n]/g, ' ')
   tweet = tweet.replace(/[".?!+,]/g, '')
-  tweet = tweet.replace(/(http:\/\/[\S]*)/g, '')
-  tweet = tweet.replace(/(https:\/\/[\S]*)/g, '')
+  tweet = tweet.replace(/(http:\/\/[\S]*)/ig, '')
+  tweet = tweet.replace(/(https:\/\/[\S]*)/ig, '')
   return tweet
 }
 

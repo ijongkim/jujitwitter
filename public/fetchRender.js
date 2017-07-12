@@ -52,11 +52,11 @@ function renderTweets (tweets) {
   clearContainer('#displayContainer')
   for (var i = 0; i < tweets.length; i++) {
     $div = $('<div>', {"class": "tweetContainer panel"})
-    $div.append('<div class="tweetText"><h4>' + tweets[i].text + '</h4></div>')
+    $div.append('<div class="tweetText"><h4>' + parseTweet(tweets[i].text) + '</h4></div>')
     $footer = $('<div>', {"class": "tweetFooter panel-footer"})
-    $footer.append('<span class="tweetLikes">Likes: ' + tweets[i].favorite_count + '</span>')
-    $footer.append('<span class="tweetRTs">Retweets: ' + tweets[i].retweet_count + '</span>')
-    $footer.append('<span class="tweetTime">Created On: ' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
+    $footer.append('<span class="tweetLikes"><span class="glyphicon glyphicon-heart" aria-hidden="true"></span>' + tweets[i].favorite_count + '</span>')
+    $footer.append('<span class="tweetRTs"><span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>' + tweets[i].retweet_count + '</span>')
+    $footer.append('<span class="tweetTime"><span class="glyphicon glyphicon-time" aria-hidden="true"></span>' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
     $div.append($footer)
     $('#displayContainer').append($div)
   }
@@ -70,8 +70,8 @@ function renderUser (user) {
   $user = $('<div>', {"class": "userPicAndStats"})
   let urlInfo = user.entities.url ? user.entities.url.urls[0] : {expanded_url: '', display_url: ''}
   let userPicAndStats = `<img class="img-rounded userPic" src="${profileImage}"/>\
-                        <div class="userStats"><div><h4>@${user.screen_name}</h4>\
-                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span> ${user.description}<br>\
+                        <div class="userStats"><div><h4>${parseTweet('@' + user.screen_name)}</h4>\
+                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span> ${parseTweet(user.description)}<br>\
                         <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> ${user.location}<br>\
                         <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span> ${user.followers_count}<br>\
                         <span class="glyphicon glyphicon-search" aria-hidden="true"></span> ${user.friends_count}<br>\
@@ -95,4 +95,18 @@ function renderError (message) {
 
 function clearContainer (selector) {
   $(selector).empty()
+}
+
+function parseTweet (tweet) {
+  let copy = tweet.replace(/(http:\/\/[\S]*)/ig, '<a href="$&">$&</a>')
+  copy = copy.replace(/(https:\/\/[\S]*)/ig, '<a href="$&">$&</a>')
+  copy = copy.replace(/(#[\w]*)/ig, function (match) {
+    let hashtag = match.slice(1)
+    return `<a href="https://twitter.com/hashtag/${hashtag}">#${hashtag}</a>`
+  })
+  copy = copy.replace(/(@[\w]*)/ig, function (match) {
+    let mention = match.slice(1)
+    return `<a href="https://twitter.com/${mention}">@${mention}</a>`
+  })
+  return copy
 }

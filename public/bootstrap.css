@@ -6807,7 +6807,7 @@ button.close {
 }
 
 .tweetLikes, .tweetRTs, .tweetTime {
-  margin: auto 20px;
+  margin: auto 40px;
 }
 
 #displayContainer:first-child {
