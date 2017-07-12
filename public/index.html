@@ -2,23 +2,32 @@
 <html>
 <head>
   <title>Welcome to JujiTwitter!</title>
-<script
-  src="https://code.jquery.com/jquery-3.2.1.min.js"
-  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-  crossorigin="anonymous"></script>
+  <script
+    src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/bootstrap.css">
   <script src="/fetchRender.js"></script>
 </head>
 <body>
-  <div id="mainContainer">
-    <div id="menu">
-      <form action="/getTweets" method="post">
-        Enter the username:<br>
-        <input id="submitUser" type="text" name="username" placeholder="@username">
-        <span id="submitButton">Get Tweets!</span>
-      </form>
-    </div>
-    <div id="displayContainer">
-      Content goes here
+  <div id="mainContainer" class="container-fluid">
+    <div class="row">
+      <div id="menuContainer" class="col-xs-4 col-sm-4 col-md-3 col-lg-3">
+        <div class="panel-body">
+          <form>
+            <div class="form-group">
+              <div class="input-group">
+                <div class="input-group-addon">@</div>
+                <input id="submitUser" type="text" class="form-control" id="exampleInputAmount" placeholder="username">
+              </div>
+            </div>
+            <button id="submitButton" type="submit" class="btn btn-default btn-block">Get Tweets!</button>
+          </form>
+        </div>
+        <div class="panel-body"><div id="sidePanel" class="panel"><h2>Start by entering a twitter user to the left!</h2></div></div>
+      </div>
+      <div id="displayContainer" class="col-xs-8 col-sm-8 col-md-9 col-lg-9 panel-body">
+      </div>
     </div>
   </div>
   <script>$(document).ready(bindButtons)</script>

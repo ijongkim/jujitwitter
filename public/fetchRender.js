@@ -16,22 +16,25 @@ function getAndFetch () {
 
 function fetchTweets (username) {
   clearContainer('#displayContainer')
-  renderLoading()
-  console.log('Fetching', username)
-  $.ajax({
-    url: '/getTweets',
-    data: {username: username},
-    method: 'POST',
-    success: renderTweets
-  })
+  if (username.length > 0) {
+    renderLoading(username)
+    $.ajax({
+      url: '/getTweets',
+      data: {username: username},
+      method: 'POST',
+      success: renderTweets
+    })
+  } else {
+    renderError('Please input a valid @username')
+  }
 }
 
 function renderTweets (tweets) {
   clearContainer('#displayContainer')
   for (var i = 0; i < tweets.length; i++) {
-    $div = $('<div>', {"class": "tweetContainer col-xs-5 col-sm-5 col-md-5 panel-default"})
-    $div.append('<span class="tweetText panel-body">' + tweets[i].text + '</span><br>')
-    $footer = $('<div>', {"class": "panel-footer"})
+    $div = $('<div>', {"class": "tweetContainer panel"})
+    $div.append('<div class="tweetText"><h4>' + tweets[i].text + '</h4></div>')
+    $footer = $('<div>', {"class": "tweetFooter panel-footer"})
     $footer.append('<span class="tweetLikes">Likes: ' + tweets[i].favorite_count + '</span>')
     $footer.append('<span class="tweetRTs">Retweets: ' + tweets[i].retweet_count + '</span>')
     $footer.append('<span class="tweetTime">Created On: ' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
@@ -40,8 +43,12 @@ function renderTweets (tweets) {
   }
 }
 
-function renderLoading () {
-  $('#displayContainer').append('<h2>Fetching tweets...</h2>')
+function renderLoading (username) {
+  $('#displayContainer').append('<h2 class="tweetContainer panel">Fetching @' + username + '\'s tweets...</h2>')
+}
+
+function renderError (message) {
+  $('#displayContainer').append('<h2 class="tweetContainer panel">Error: ' + message + '!</h2>')
 }
 
 function clearContainer (selector) {

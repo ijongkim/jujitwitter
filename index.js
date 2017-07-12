@@ -11,7 +11,7 @@ const tCombo = tKey + ':' + tSecret
 const tBase = new Buffer(tCombo).toString('base64')
 let token = ''
 
-function getBearerToken (base, token, callback) {
+function getBearerToken (base, callback) {
   let options = {
     url: 'https://api.twitter.com/oauth2/token',
     headers: {
@@ -23,16 +23,18 @@ function getBearerToken (base, token, callback) {
   }
   request.post(options, function (error, response, body) {
     if (!error) {
-      token = JSON.parse(body)
-      token = token.access_token
+      let temp = JSON.parse(body)
       if (callback) {
-        callback(token)
+        callback(temp.access_token)
       }
+      return temp.access_token
     } else {
       console.log('Error:', error)
     }
   })
 }
+
+token = getBearerToken(tBase)
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static('public'))
@@ -43,7 +45,7 @@ app.post('/getTweets', function (req, res) {
     utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) })
   } else {
     console.log('Requesting token...')
-    getBearerToken(tBase, token, function (token) { utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) }) })
+    token = getBearerToken(tBase, function (token) { utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) }) })
   }
 })
 
