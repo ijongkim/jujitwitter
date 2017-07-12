@@ -9,7 +9,7 @@ const tKey = process.env.KEY
 const tSecret = process.env.SECRET
 const tCombo = tKey + ':' + tSecret
 const tBase = new Buffer(tCombo).toString('base64')
-let token = ''
+let storedToken = ''
 
 function getBearerToken (base, callback) {
   let options = {
@@ -24,28 +24,32 @@ function getBearerToken (base, callback) {
   request.post(options, function (error, response, body) {
     if (!error) {
       let temp = JSON.parse(body)
+      setToken(temp.access_token)
       if (callback) {
         callback(temp.access_token)
       }
-      return temp.access_token
     } else {
       console.log('Error:', error)
     }
   })
 }
 
-token = getBearerToken(tBase)
+function setToken (token) {
+  storedToken = token
+}
+
+getBearerToken(tBase)
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static('public'))
 
 app.post('/getTweets', function (req, res) {
-  if (token) {
-    console.log('Requesting with token:', token)
-    utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) })
+  if (storedToken) {
+    console.log('Requesting with token:', storedToken)
+    utils.getTweets(storedToken, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) })
   } else {
     console.log('Requesting token...')
-    token = getBearerToken(tBase, function (token) { utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) }) })
+    getBearerToken(tBase, function (token) { utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, function (data) { res.send(data) }) }, function (data) { res.send(data) }) })
   }
 })
 

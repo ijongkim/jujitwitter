@@ -44,7 +44,7 @@ function renderTweets (tweets) {
 }
 
 function renderLoading (username) {
-  $('#displayContainer').append('<h2 class="tweetContainer panel">Fetching @' + username + '\'s tweets...</h2>')
+  $('#displayContainer').append('<h2 class="tweetContainer panel">Analyzing @' + username + '\'s tweets...</h2>')
 }
 
 function renderError (message) {
