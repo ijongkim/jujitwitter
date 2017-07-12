@@ -18,7 +18,6 @@ function getTweets (token, username, list, currCount, maxCount, maxID, callback,
     console.log('Getting tweets', currCount, '-', currCount + 200, 'of', maxCount, 'for', username, 'from ID:', id)
     request(options, function (error, response, body) {
       let tweets = JSON.parse(body)
-      // console.log(error, body)
       if (!error && Array.isArray(tweets)) {
         if (tweets.length === 0) {
           console.log('Starting processing')
@@ -191,12 +190,7 @@ function sortTweets (tweets) {
 
 function printTweets (tweets, count) {
   let limit = count > tweets.length ? Math.min(tweets.length, 10) : count
-  var tweetsPrint = []
-  for (var i = 0; i < limit; i++) {
-    console.log('\n' + tweets[i].text + '\nScore: ' + tweets[i].score + '  Likes: ' + tweets[i].favorite_count)
-    tweetsPrint.push(tweets[i].text + '\nScore: ' + tweets[i].score + '  Likes: ' + tweets[i].favorite_count)
-  }
-  return tweetsPrint
+  return tweets.slice(0, limit)
 }
 
 function processTweets (tweetList, max, callback) {

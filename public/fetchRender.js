@@ -28,7 +28,12 @@ function fetchTweets (username) {
 function renderTweets (tweets) {
   clearContainer('#displayContainer')
   for (var i = 0; i < tweets.length; i++) {
-    $('#displayContainer').append('<div>' + tweets[i] + '</div>')
+    $div = $('<div>', {"class": "tweetContainer"})
+    $div.append('<span class="tweetText">' + tweets[i].text + '</span><br>')
+    $div.append('<span class="tweetLikes">Likes: ' + tweets[i].favorite_count + '</span>')
+    $div.append('<span class="tweetRTs">Retweets: ' + tweets[i].retweet_count + '</span>')
+    $div.append('<span class="tweetTime">Created On: ' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
+    $('#displayContainer').append($div)
   }
 }
 
