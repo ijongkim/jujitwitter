@@ -1,8 +1,9 @@
 function bindButtons () {
   $('#submitButton').bind('click', getAndFetch)
-  $(document).keypress(function (e) {
+  $(document).keydown(function (e) {
     if (e.which === 13) {
-        getAndFetch()
+      e.preventDefault()
+      getAndFetch()
     }
   })
 }
@@ -28,11 +29,13 @@ function fetchTweets (username) {
 function renderTweets (tweets) {
   clearContainer('#displayContainer')
   for (var i = 0; i < tweets.length; i++) {
-    $div = $('<div>', {"class": "tweetContainer"})
-    $div.append('<span class="tweetText">' + tweets[i].text + '</span><br>')
-    $div.append('<span class="tweetLikes">Likes: ' + tweets[i].favorite_count + '</span>')
-    $div.append('<span class="tweetRTs">Retweets: ' + tweets[i].retweet_count + '</span>')
-    $div.append('<span class="tweetTime">Created On: ' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
+    $div = $('<div>', {"class": "tweetContainer col-xs-5 col-sm-5 col-md-5 panel-default"})
+    $div.append('<span class="tweetText panel-body">' + tweets[i].text + '</span><br>')
+    $footer = $('<div>', {"class": "panel-footer"})
+    $footer.append('<span class="tweetLikes">Likes: ' + tweets[i].favorite_count + '</span>')
+    $footer.append('<span class="tweetRTs">Retweets: ' + tweets[i].retweet_count + '</span>')
+    $footer.append('<span class="tweetTime">Created On: ' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
+    $div.append($footer)
     $('#displayContainer').append($div)
   }
 }
