@@ -1,10 +1,10 @@
 function bindButtons () {
-  var button = $('#submitButton')
-  if (button) {
-    button.bind('click', getAndFetch)
-  } else {
-    setTimeout(bindButtons, 1000)
-  }
+  $('#submitButton').bind('click', getAndFetch)
+  $(document).keypress(function (e) {
+    if (e.which === 13) {
+        getAndFetch()
+    }
+  })
 }
 
 function getAndFetch () {
