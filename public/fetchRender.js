@@ -16,17 +16,36 @@ function getAndFetch () {
 
 function fetchTweets (username) {
   clearContainer('#displayContainer')
+  clearContainer('#userProfile')
+  updateBanner()
   if (username.length > 0) {
     renderLoading(username)
     $.ajax({
       url: '/getTweets',
       data: {username: username},
       method: 'POST',
-      success: renderTweets
+      success: function (data) {
+        renderTweets(data[0])
+        renderUser(data[0][0].user)
+        // renderFreq(data[1])
+      }
     })
   } else {
     renderError('Please input a valid @username')
   }
+}
+
+function updateBanner (username) {
+  clearContainer('#sideBanner')
+  let banner = '<h1>Top 10 Representative Tweets'
+
+  if (username) {
+    banner += ` of ${username}</h1>`
+  } else {
+    banner += '</h1>'
+  }
+
+  $('#sideBanner').append(banner)
 }
 
 function renderTweets (tweets) {
@@ -41,6 +60,29 @@ function renderTweets (tweets) {
     $div.append($footer)
     $('#displayContainer').append($div)
   }
+}
+
+function renderUser (user) {
+  updateBanner(user.name)
+  let profileImage = user.profile_image_url
+  profileImage = profileImage.replace(/_normal/g, '')
+
+  $user = $('<div>', {"class": "userPicAndStats"})
+  let urlInfo = user.entities.url ? user.entities.url.urls[0] : {expanded_url: '', display_url: ''}
+  let userPicAndStats = `<img class="img-rounded userPic" src="${profileImage}"/>\
+                        <div class="userStats"><div><h4>@${user.screen_name}</h4>\
+                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span> ${user.description}<br>\
+                        <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> ${user.location}<br>\
+                        <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span> ${user.followers_count}<br>\
+                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span> ${user.friends_count}<br>\
+                        <span class="glyphicon glyphicon-globe" aria-hidden="true"></span> <a href="${urlInfo.expanded_url}">${urlInfo.display_url}</a>`
+
+  $user.append(userPicAndStats)
+  $('#userProfile').append($user)
+}
+
+function renderFreq (data) {
+  $('#sidePanel').append('<p>' + JSON.stringify(data) + '</p>')
 }
 
 function renderLoading (username) {

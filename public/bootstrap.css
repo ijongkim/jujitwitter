@@ -6777,6 +6777,22 @@ button.close {
   word-wrap: break-word;
 }
 
+#bannerUsername {
+  margin-top: -20px;
+  font-size: 2em;
+  font-weight: 800;
+}
+
+.userPic {
+  max-width: 35%;
+  float: left;
+}
+
+.userStats {
+  margin-left: 35%;
+  padding-left: 10px;
+}
+
 .tweetContainer {
   padding: 10px;
   margin: 10px 0px;

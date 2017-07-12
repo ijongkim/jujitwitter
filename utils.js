@@ -2,7 +2,7 @@ const bignum = require('bignum')
 const request = require('request')
 
 function getTweets (token, username, list, currCount, maxCount, maxID, callback, errorHandle) {
-  let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&trim_user=true&exclude_replies=true&include_rts=false'
+  let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&exclude_replies=true&include_rts=false'
   url += maxID ? '&max_id=' + maxID.toString() : ''
   let options = {
     url: url,
@@ -199,7 +199,7 @@ function processTweets (tweetList, max, callback) {
   let scoreSheet = createScores(dictionary)
   scoreTweets(scoreSheet, dictionary, tweetList, false)
   sortTweets(tweetList)
-  callback(printTweets(tweetList, max))
+  callback([printTweets(tweetList, max), dictionary])
 }
 
 function cleanUsername (username, max) {
