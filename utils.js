@@ -82,7 +82,11 @@ function countWords (tweet) {
   let wordCount = words.length
   for (let i = 0; i < wordCount; i++) {
     let word = words[i].toLowerCase()
-    let skip = word === 'rt' || word.search(/(U\+[0-9ABCDEF]+rt)/) || word.search(/(rt@)/)
+    let rt = word === 'rt'
+    // let emoji = word.search(/(U\+[0-9ABCDEF]+rt)/) !== -1
+      // Difficulty searching for emojis so currently omitted
+    let mention = word.search(/(rt@)/) !== -1
+    let skip = rt || mention
     if (skip) {
       return {
         grams: {},
