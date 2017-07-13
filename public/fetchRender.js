@@ -1,3 +1,10 @@
+let currentTab = ''
+let bannerMessages = {
+  '#selectedTweets': 'Top 10 Tweets',
+  '#randomTweets': 'Random Tweets',
+  '#userAnalysis': 'User Analysis'
+}
+
 function bindButtons () {
   $('#submitButton').bind('click', getAndFetch)
   $(document).keydown(function (e) {
@@ -15,23 +22,37 @@ function getAndFetch () {
 }
 
 function fetchTweets (username) {
-  clearContainer('#displayContainer')
-  clearContainer('#userProfile')
-  updateBanner()
+  if (currentTab) {
+    switchDisplay(currentTab, '#selectedTweets')
+  }
+  clearContainer('#selectedTweets')
+  clearContainer('#randomTweets')
+  clearContainer('#userAnalysis')
+  clearContainer('#displayMenu')
+  renderLoading()
   if (username.length > 0) {
-    renderLoading(username)
+    updateTopBanner('Analyzing @' + cleanUsername(username, 15) + '\'s tweets...')
     $.ajax({
       url: '/getTweets',
       data: {username: username},
       method: 'POST',
       success: function (data) {
-        renderTweets(data.tweets)
-        renderUser(data.tweets[0].user)
+        if (typeof data === 'string') {
+          updateTopBanner(data)
+        } else {
+          updateTopBanner('Top 10 Tweets')
+        }
+        renderSwitch()
+        renderTweets(data.selected, '#selectedTweets')
+        currentTab = '#selectedTweets'
+        renderTweets(data.random, '#randomTweets')
+        $('#randomTweets').hide()
+        renderUser(data.selected[0].user)
         // renderFreq(data[1])
       }
     })
   } else {
-    renderError('Please input a valid @username')
+    updateTopBanner('Please input a valid @username')
   }
 }
 
@@ -41,62 +62,79 @@ function printTweets (list) {
   }
 }
 
-function updateBanner (username) {
-  clearContainer('#sideBanner')
-  let banner = '<h1>Top 10 Tweets'
-
-  if (username) {
-    banner += ` Representative of ${username}</h1>`
-  } else {
-    banner += '</h1>'
-  }
-
-  $('#sideBanner').append(banner)
-}
-
-function renderTweets (tweets) {
-  clearContainer('#displayContainer')
+function renderTweets (tweets, container) {
+  clearContainer(container)
   for (var i = 0; i < tweets.length; i++) {
     $div = $('<div>', {"class": "tweetContainer panel"})
     $div.append('<div class="tweetText"><h4>#' + (i + 1) + '    ' + parseTweet(tweets[i].text) + '</h4></div>')
     $footer = $('<div>', {"class": "tweetFooter panel-footer"})
+    $footer.append('<span class="tweetScore"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span>' + Math.floor(tweets[i].score) + '</span>')
     $footer.append('<span class="tweetLikes"><span class="glyphicon glyphicon-heart" aria-hidden="true"></span>' + tweets[i].favorite_count + '</span>')
     $footer.append('<span class="tweetRTs"><span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>' + tweets[i].retweet_count + '</span>')
     $footer.append('<span class="tweetTime"><span class="glyphicon glyphicon-time" aria-hidden="true"></span>' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
     $div.append($footer)
-    $('#displayContainer').append($div)
+    $(container).append($div)
   }
 }
 
 function renderUser (user) {
-  updateBanner(user.name)
+  clearContainer('#sidePanel')
   let profileImage = user.profile_image_url
   profileImage = profileImage.replace(/_normal/g, '')
 
   $user = $('<div>', {"class": "userPicAndStats"})
   let urlInfo = user.entities.url ? user.entities.url.urls[0] : {expanded_url: '', display_url: ''}
   let userPicAndStats = `<img class="img-rounded userPic" src="${profileImage}"/>\
-                        <div class="userStats"><div><h4>${parseTweet('@' + user.screen_name)}</h4>\
+                        <div class="userStats"><h2>${user.name}</h2><h4>${parseTweet('@' + user.screen_name)}</h4>\
                         <span class="glyphicon glyphicon-user" aria-hidden="true"></span> ${parseTweet(user.description)}<br>\
                         <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> ${user.location}<br>\
                         <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span> ${addCommas(user.followers_count)}<br>\
                         <span class="glyphicon glyphicon-search" aria-hidden="true"></span> ${addCommas(user.friends_count)}<br>\
-                        <span class="glyphicon glyphicon-globe" aria-hidden="true"></span> <a href="${urlInfo.expanded_url}" target="_blank>${urlInfo.display_url}</a><br><br>`
+                        <span class="glyphicon glyphicon-globe" aria-hidden="true"></span> <a href="${urlInfo.expanded_url}" target="_blank>${urlInfo.display_url}</a></div>`
 
   $user.append(userPicAndStats)
-  $('#userProfile').append($user)
+  $('#sidePanel').append($user)
 }
 
 function renderFreq (data) {
   $('#sidePanel').append('<p>' + JSON.stringify(data) + '</p>')
 }
 
-function renderLoading (username) {
-  $('#displayContainer').append('<h2 class="tweetContainer panel">Analyzing @' + cleanUsername(username, 15) + '\'s tweets...</h2>')
+function bindSwitch (button, container) {
+  $(button).bind('click', function () {
+    switchDisplay(currentTab, container)
+  })
 }
 
-function renderError (message) {
-  $('#displayContainer').append('<h2 class="tweetContainer panel">Error: ' + message + '!</h2>')
+function renderSwitch () {
+  clearContainer('#displayMenu')
+  $menu = $('<div>', {"class": "row"})
+  $menu.append('<div class="col-lg-4"><button id="selectedButton" type="button" class="btn btn-default btn-block"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> Selected Tweets</button></div>')
+  $menu.append('<div class="col-lg-4"><button id="randomButton" type="button" class="btn btn-default btn-block"><span class="glyphicon glyphicon-random" aria-hidden="true"></span> Random Tweets</button></div>')
+  $menu.append('<div class="col-lg-4"><button id="analysisButton" type="button" class="btn btn-default btn-block"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span> User Analysis</button></div>')
+  $('#displayMenu').append($menu)
+  bindSwitch('#selectedButton', '#selectedTweets')
+  bindSwitch('#randomButton', '#randomTweets')
+  bindSwitch('#analysisButton', '#userAnalysis')
+}
+
+function switchDisplay (current, next) {
+  $(current).hide()
+  $(next).show()
+  if (bannerMessages[next]) {
+    updateTopBanner(bannerMessages[next])
+  }
+  currentTab = next
+}
+
+function updateTopBanner (message) {
+  clearContainer('#displayBanner')
+  $('#displayBanner').append('<span>' + message + '</span>')
+}
+
+function renderLoading () {
+  clearContainer('#sidePanel')
+  $('#sidePanel').append('<img id="loadingGif" class="img-responsive" src="/loader.gif"/>')
 }
 
 function clearContainer (selector) {

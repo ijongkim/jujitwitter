@@ -6764,12 +6764,58 @@ button.close {
 }
 /*# sourceMappingURL=bootstrap.css.map */
 
+#mainContainer {
+  height: 100%;
+  max-height: 100%;
+}
+
+#mainContainer .row {
+  height: 100%;
+  max-height: 100%;
+}
+
 #menuContainer, #displayContainer {
   margin: auto;
+  overflow: hidden;
+}
+
+#menuContainer {
+  position: fixed;
+}
+
+#displayContainer {
+  position: absolute;
+  display: flex;
+  flex-flow: column;
+  top: 0;
+  right: 0;
+  height: 100%;
+}
+
+#selectedTweets, #randomTweets, #userAnalysis {
+  padding-right: 15px;
+  margin-right: -30px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 4px;
+}
+
+#displayContainer:first-child {
+  padding-top: 0;
 }
 
 #displayContainer .tweetContainer:first-child {
   margin: 0 0 10px 0;
+}
+
+#selectedTweets .tweetContainer:last-child, #randomTweets .tweetContainer:last-child, #userAnalysis .tweetContainer:last-child {
+  margin-bottom: 0;
+}
+
+#displayBanner span {
+  font-weight: 800;
+  font-size: 2em;
+  margin: auto;
 }
 
 #sidePanel {
@@ -6790,6 +6836,7 @@ button.close {
 
 .userStats {
   margin-left: 35%;
+  margin-bottom: 20px;
   padding-left: 10px;
 }
 
@@ -6806,14 +6853,19 @@ button.close {
   margin: auto 20px auto 10px;
 }
 
-.tweetLikes, .tweetRTs, .tweetTime {
+.tweetScore, .tweetLikes, .tweetRTs, .tweetTime {
   margin: auto 40px;
-}
-
-#displayContainer:first-child {
-  padding-top: 0;
 }
 
 #submitButton {
   margin: auto;
+}
+
+#selectedButton, #randomButton, #analysisButton {
+  margin: 0 auto 10px auto;
+}
+
+#loadingGif {
+  max-width: 33%;
+  margin: 25% auto;
 }
