@@ -3,9 +3,5 @@
 # see https://npmjs.org/doc/faq.html#Should-I-check-my-node_modules-folder-into-git
 node_modules/*
 
-# Unignore sentiment/lib
-!node_modules/sentiment/lib/
-!node_modules/sentiment/lib/*
-
 # Env file
 .env

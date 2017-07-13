@@ -1,7 +1,7 @@
 const bignum = require('bignum')
 const request = require('request')
 const stopWords = require('./stopwords.js')
-const sentiment = require('sentiment')
+const sentiment = require('./sentiment/lib/index.js')
 
 function getTweets (token, username, list, currCount, maxCount, maxID, callback, errorHandle) {
   let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&exclude_replies=true&include_rts=false'
