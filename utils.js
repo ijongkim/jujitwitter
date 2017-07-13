@@ -1,6 +1,7 @@
 const bignum = require('bignum')
 const request = require('request')
 const stopWords = require('./stopwords.js')
+const sentiment = require('sentiment')
 
 function getTweets (token, username, list, currCount, maxCount, maxID, callback, errorHandle) {
   let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&exclude_replies=true&include_rts=false'
@@ -63,19 +64,37 @@ function isStopword (stopwords, word) {
 function countWords (tweet) {
   let counts = {
     grams: {},
-    frequency: {}
+    frequency: {},
+    sentiment: {
+      score: 0,
+      comparative: 0,
+      tokens: [],
+      words: [],
+      positive: [],
+      negative: []
+    }
   }
   if (!tweet) {
     return counts
   }
+  counts.sentiment = sentiment(tweet)
   let words = tweet.slice().split(' ')
   let wordCount = words.length
   for (let i = 0; i < wordCount; i++) {
     let word = words[i].toLowerCase()
-    if (word === 'rt') {
+    let skip = word === 'rt' || word.search(/(U\+[0-9ABCDEF]+rt)/) || word.search(/(rt@)/)
+    if (skip) {
       return {
         grams: {},
-        frequency: {}
+        frequency: {},
+        sentiment: {
+          score: 0,
+          comparative: 0,
+          tokens: [],
+          words: [],
+          positive: [],
+          negative: []
+        }
       }
     }
     if (word && !isStopword(stopWords.mini, word)) {
@@ -104,9 +123,12 @@ function countWords (tweet) {
 function buildDictionary (tweetList) {
   let dictionary = {
     'frequency': {},
-    'grams': {}
+    'grams': {},
+    'sentiment': {}
   }
   const tweetCount = tweetList.length
+  let totalSentiment = 0
+  let totalCompSentiment = 0
   for (let i = 0; i < tweetCount; i++) {
     let tweet = cleanTweet(tweetList[i].text)
     let counts = countWords(tweet)
@@ -125,7 +147,12 @@ function buildDictionary (tweetList) {
         dictionary.grams[gram] = counts.grams[gram]
       }
     }
+    totalSentiment += counts.sentiment.score
+    totalCompSentiment += counts.sentiment.comparative
   }
+  dictionary.sentiment.avgSentiment = totalSentiment / tweetCount
+  dictionary.sentiment.avgCompSentiment = totalCompSentiment / tweetCount
+  console.log('buildDict', dictionary.sentiment)
   console.log('Dictionary built')
   return dictionary
 }
@@ -152,13 +179,16 @@ function createScores (dictionary) {
   return countsHash
 }
 
-function setScore (scores, dictionary, tweet) {
+function setScore (scores, dictionary, tweet, avgSent, avgCompSent) {
   let words = tweet.word_counts.frequency
+  tweet.diffSent = Math.abs(tweet.word_counts.sentiment.score - avgSent)
   let score = 0
   for (let word in words) {
-    score += scores[dictionary[word]]
+    score += scores[dictionary[word]] * words[word]
   }
+  // tweet.score = score / (tweet.diffSent + 1)
   tweet.score = score
+  tweet.diffCompSent = Math.abs(tweet.word_counts.sentiment.comparative - avgCompSent)
 }
 
 function setScoreGrams (scores, dictionary, tweet) {
@@ -170,13 +200,13 @@ function setScoreGrams (scores, dictionary, tweet) {
   tweet.score = tweet.score / score
 }
 
-function scoreTweets (scores, dictionary, tweets, grams) {
+function scoreTweets (scores, dictionary, tweets, grams, avgSent, avgCompSent) {
   const tweetLength = tweets.length
   for (var i = 0; i < tweetLength; i++) {
     if (grams) {
       setScoreGrams(scores, dictionary, tweets[i])
     } else {
-      setScore(scores, dictionary, tweets[i])
+      setScore(scores, dictionary, tweets[i], avgSent, avgCompSent)
     }
   }
   console.log('Scores calculated')
@@ -214,7 +244,8 @@ function randomTweets (tweets, count) {
 
 function printArray (array) {
   for (var i = 0; i < array.length; i++) {
-    console.log(array[i].text, array[i].score)
+    // console.log(array[i].text, array[i].score, array[i].diffSent, array[i].diffCompSent)
+    console.log(array[i].text + '\n')
   }
 }
 
@@ -242,12 +273,12 @@ function processTweets (tweetList, max, callback) {
   let dictionary = buildDictionary(tweetList)
   let wordScore = createScores(dictionary.frequency)
   let gramScore = createScores(dictionary.grams)
-  scoreTweets(wordScore, dictionary.frequency, tweetList, false)
+  scoreTweets(wordScore, dictionary.frequency, tweetList, false, dictionary.sentiment.avgSentiment, dictionary.sentiment.avgCompSentiment)
   scoreTweets(gramScore, dictionary.grams, tweetList, true)
   let random = randomTweets(tweetList, 10)
   sortTweets(tweetList)
   // printArray(rankDictionary(dictionary))
-  // printArray(printTweets(tweetList, max))
+  printArray(printTweets(tweetList, max))
   // printArray(random)
   // printArray(tweetList.slice(-5))
   // // console.log(rankDictionary(dictionary.grams))
