@@ -46,9 +46,10 @@ function getTweets (token, username, list, currCount, maxCount, maxID, callback,
 function cleanTweet (original) {
   let tweet = original.slice()
   tweet = tweet.replace(/[\n]/g, ' ')
-  tweet = tweet.replace(/[".?!+,]/g, '')
   tweet = tweet.replace(/(http:\/\/[\S]*)/ig, '')
   tweet = tweet.replace(/(https:\/\/[\S]*)/ig, '')
+  tweet = tweet.replace(/[\.]@/g, 'rt@')
+  tweet = tweet.replace(/[\"\.\?\!\+\,\:\(\)\/\\\*\^\|]/g, '')
   tweet = tweet.replace(/[\s]+/g, ' ')
   return tweet.trim()
 }
@@ -83,10 +84,9 @@ function countWords (tweet) {
   for (let i = 0; i < wordCount; i++) {
     let word = words[i].toLowerCase()
     let rt = word === 'rt'
-    // let emoji = word.search(/(U\+[0-9ABCDEF]+rt)/) !== -1
-      // Difficulty searching for emojis so currently omitted
     let mention = word.search(/(rt@)/) !== -1
-    let skip = rt || mention
+    let emoji = word.search(/[^\w\s@#]rt/) !== -1
+    let skip = rt || mention || emoji
     if (skip) {
       return {
         grams: {},
@@ -190,8 +190,8 @@ function setScore (scores, dictionary, tweet, avgSent, avgCompSent) {
   for (let word in words) {
     score += scores[dictionary[word]] * words[word]
   }
-  // tweet.score = score / (tweet.diffSent + 1)
-  tweet.score = score
+  tweet.score = score / (tweet.diffSent + 1)
+  // tweet.score = score
   tweet.diffCompSent = Math.abs(tweet.word_counts.sentiment.comparative - avgCompSent)
 }
 
