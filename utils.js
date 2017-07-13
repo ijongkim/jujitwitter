@@ -1,5 +1,6 @@
 const bignum = require('bignum')
 const request = require('request')
+const stopWords = require('./stopwords.js')
 
 function getTweets (token, username, list, currCount, maxCount, maxID, callback, errorHandle) {
   let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&exclude_replies=true&include_rts=false'
@@ -47,39 +48,12 @@ function cleanTweet (original) {
   tweet = tweet.replace(/[".?!+,]/g, '')
   tweet = tweet.replace(/(http:\/\/[\S]*)/ig, '')
   tweet = tweet.replace(/(https:\/\/[\S]*)/ig, '')
-  return tweet
+  tweet = tweet.replace(/[\s]+/g, ' ')
+  return tweet.trim()
 }
 
-function isStopword (word) {
-  const stopWords = {
-    'a': 1,
-    'an': 1,
-    'and': 1,
-    'are': 1,
-    'as': 1,
-    'at': 1,
-    'be': 1,
-    'by': 1,
-    'for': 1,
-    'from': 1,
-    'has': 1,
-    'he': 1,
-    'in': 1,
-    'is': 1,
-    'it': 1,
-    'its': 1,
-    'of': 1,
-    'on': 1,
-    'she': 1,
-    'that': 1,
-    'the': 1,
-    'to': 1,
-    'was': 1,
-    'were': 1,
-    'will': 1,
-    'with': 1
-  }
-  if (stopWords[word]) {
+function isStopword (stopwords, word) {
+  if (stopwords[word]) {
     return true
   } else {
     return false
@@ -87,36 +61,68 @@ function isStopword (word) {
 }
 
 function countWords (tweet) {
+  let counts = {
+    grams: {},
+    frequency: {}
+  }
+  if (!tweet) {
+    return counts
+  }
   let words = tweet.slice().split(' ')
-  let counts = {}
   let wordCount = words.length
-  for (var i = 0; i < wordCount; i++) {
+  for (let i = 0; i < wordCount; i++) {
     let word = words[i].toLowerCase()
-    if (word) {
+    if (word === 'rt') {
+      return {
+        grams: {},
+        frequency: {}
+      }
     }
-    if (word && !isStopword(word)) {
-      if (counts[word]) {
-        counts[word]++
+    if (word && !isStopword(stopWords.mini, word)) {
+      if (counts.frequency[word]) {
+        counts.frequency[word]++
       } else {
-        counts[word] = 1
+        counts.frequency[word] = 1
       }
     }
   }
+  if (words.length < 4) {
+    let gram = words.join(' ')
+    gram = gram.toLowerCase()
+    counts.grams[gram] = 1
+  } else {
+    for (let j = 0; j < words.length - 2; j++) {
+      let gram = words[j] + ' ' + words[j + 1] + ' ' + words[j + 2]
+      gram = gram.toLowerCase()
+      counts.grams[gram] = 1
+    }
+  }
+
   return counts
 }
 
 function buildDictionary (tweetList) {
-  var dictionary = {}
+  let dictionary = {
+    'frequency': {},
+    'grams': {}
+  }
   const tweetCount = tweetList.length
-  for (var i = 0; i < tweetCount; i++) {
+  for (let i = 0; i < tweetCount; i++) {
     let tweet = cleanTweet(tweetList[i].text)
     let counts = countWords(tweet)
-    tweetList[i].word_count = counts
-    for (var key in counts) {
-      if (dictionary[key]) {
-        dictionary[key] += counts[key]
+    tweetList[i].word_counts = counts
+    for (let word in counts.frequency) {
+      if (dictionary.frequency[word]) {
+        dictionary.frequency[word] += counts.frequency[word]
       } else {
-        dictionary[key] = counts[key]
+        dictionary.frequency[word] = counts.frequency[word]
+      }
+    }
+    for (let gram in counts.grams) {
+      if (dictionary.grams[gram]) {
+        dictionary.grams[gram] += counts.grams[gram]
+      } else {
+        dictionary.grams[gram] = counts.grams[gram]
       }
     }
   }
@@ -127,7 +133,7 @@ function buildDictionary (tweetList) {
 function createScores (dictionary) {
   let counts = []
   let countsHash = {}
-  for (var word in dictionary) {
+  for (let word in dictionary) {
     if (countsHash[dictionary[word]]) {
       continue
     } else {
@@ -139,38 +145,36 @@ function createScores (dictionary) {
     return a - b
   })
   let countsLength = counts.length
-  for (var i = 0; i < countsLength; i++) {
-    countsHash[counts[i]] = i + 1
+  for (let i = 0; i < countsLength; i++) {
+    countsHash[counts[i]] = i
   }
   console.log('Scores created')
   return countsHash
 }
 
 function setScore (scores, dictionary, tweet) {
-  let words = tweet.word_count
+  let words = tweet.word_counts.frequency
   let score = 0
-  for (var word in words) {
+  for (let word in words) {
     score += scores[dictionary[word]]
   }
   tweet.score = score
 }
 
-function setScoreNorm (scores, dictionary, tweet) {
-  let words = tweet.word_count
-  let score = 0
-  let num = 0
-  for (var word in words) {
-    num++
-    score += scores[dictionary[word]]
+function setScoreGrams (scores, dictionary, tweet) {
+  let grams = tweet.word_counts.grams
+  let score = 1
+  for (var gram in grams) {
+    score += scores[dictionary[gram]]
   }
-  tweet.score = score / num
+  tweet.score = tweet.score / score
 }
 
-function scoreTweets (scores, dictionary, tweets, normalize) {
+function scoreTweets (scores, dictionary, tweets, grams) {
   const tweetLength = tweets.length
   for (var i = 0; i < tweetLength; i++) {
-    if (normalize) {
-      setScoreNorm(scores, dictionary, tweets[i])
+    if (grams) {
+      setScoreGrams(scores, dictionary, tweets[i])
     } else {
       setScore(scores, dictionary, tweets[i])
     }
@@ -193,13 +197,61 @@ function printTweets (tweets, count) {
   return tweets.slice(0, limit)
 }
 
+function randomTweets (tweets, count) {
+  console.log('Selecting random tweets')
+  let selected = {}
+  let results = []
+  for (var i = 0; i < count; i++) {
+    let rand = Math.floor(Math.random() * tweets.length)
+    while (selected[rand]) {
+      rand = Math.floor(Math.random() * tweets.length)
+    }
+    selected[rand] = true
+    results.push(tweets[rand])
+  }
+  return results
+}
+
+function printArray (array) {
+  for (var i = 0; i < array.length; i++) {
+    console.log(array[i].text, array[i].score)
+  }
+}
+
+function printObject (obj) {
+  for (let key in obj) {
+    console.log(key)
+  }
+}
+
+function rankDictionary (dictionary) {
+  var ranked = []
+  for (var word in dictionary) {
+    if (dictionary[word] > 0) {
+      ranked.push([dictionary[word], word])
+    }
+  }
+  ranked.sort(function (a, b) {
+    return b[0] - a[0]
+  })
+  return ranked
+}
+
 function processTweets (tweetList, max, callback) {
   console.log('Processing', tweetList.length, 'tweets...')
   let dictionary = buildDictionary(tweetList)
-  let scoreSheet = createScores(dictionary)
-  scoreTweets(scoreSheet, dictionary, tweetList, false)
+  let wordScore = createScores(dictionary.frequency)
+  let gramScore = createScores(dictionary.grams)
+  scoreTweets(wordScore, dictionary.frequency, tweetList, false)
+  scoreTweets(gramScore, dictionary.grams, tweetList, true)
+  let random = randomTweets(tweetList, 10)
   sortTweets(tweetList)
-  callback([printTweets(tweetList, max), dictionary])
+  // printArray(rankDictionary(dictionary))
+  // printArray(printTweets(tweetList, max))
+  // printArray(random)
+  // printArray(tweetList.slice(-5))
+  // // console.log(rankDictionary(dictionary.grams))
+  callback({'tweets': printTweets(tweetList, max).concat(random), 'dictionary': dictionary})
 }
 
 function cleanUsername (username, max) {
@@ -214,7 +266,7 @@ module.exports.countWords = countWords
 module.exports.buildDictionary = buildDictionary
 module.exports.createScores = createScores
 module.exports.setScore = setScore
-module.exports.setScoreNorm = setScoreNorm
+module.exports.setScoreNorm = setScoreGrams
 module.exports.scoreTweets = scoreTweets
 module.exports.sortTweets = sortTweets
 module.exports.printTweets = printTweets

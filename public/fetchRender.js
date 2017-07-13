@@ -25,13 +25,19 @@ function fetchTweets (username) {
       data: {username: username},
       method: 'POST',
       success: function (data) {
-        renderTweets(data[0])
-        renderUser(data[0][0].user)
+        renderTweets(data.tweets)
+        renderUser(data.tweets[0].user)
         // renderFreq(data[1])
       }
     })
   } else {
     renderError('Please input a valid @username')
+  }
+}
+
+function printTweets (list) {
+  for (var i = 0; i < list.length; i++) {
+    console.log(list[i].text)
   }
 }
 
@@ -52,7 +58,7 @@ function renderTweets (tweets) {
   clearContainer('#displayContainer')
   for (var i = 0; i < tweets.length; i++) {
     $div = $('<div>', {"class": "tweetContainer panel"})
-    $div.append('<div class="tweetText"><h4>' + parseTweet(tweets[i].text) + '</h4></div>')
+    $div.append('<div class="tweetText"><h4>#' + (i + 1) + '    ' + parseTweet(tweets[i].text) + '</h4></div>')
     $footer = $('<div>', {"class": "tweetFooter panel-footer"})
     $footer.append('<span class="tweetLikes"><span class="glyphicon glyphicon-heart" aria-hidden="true"></span>' + tweets[i].favorite_count + '</span>')
     $footer.append('<span class="tweetRTs"><span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>' + tweets[i].retweet_count + '</span>')
