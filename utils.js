@@ -156,7 +156,6 @@ function buildDictionary (tweetList) {
   }
   dictionary.sentiment.avgSentiment = totalSentiment / tweetCount
   dictionary.sentiment.avgCompSentiment = totalCompSentiment / tweetCount
-  console.log('buildDict', dictionary.sentiment)
   console.log('Dictionary built')
   return dictionary
 }
@@ -186,13 +185,13 @@ function createScores (dictionary) {
 function setScore (scores, dictionary, tweet, avgSent, avgCompSent) {
   let words = tweet.word_counts.frequency
   tweet.diffSent = Math.abs(tweet.word_counts.sentiment.score - avgSent)
+  tweet.diffCompSent = Math.abs(tweet.word_counts.sentiment.comparative - avgCompSent)
   let score = 0
   for (let word in words) {
     score += scores[dictionary[word]] * words[word]
   }
-  tweet.score = score / (tweet.diffSent + 1)
+  tweet.score = score / (tweet.diffCompSent + 1)
   // tweet.score = score
-  tweet.diffCompSent = Math.abs(tweet.word_counts.sentiment.comparative - avgCompSent)
 }
 
 function setScoreGrams (scores, dictionary, tweet) {
@@ -233,9 +232,10 @@ function printTweets (tweets, count) {
 
 function randomTweets (tweets, count) {
   console.log('Selecting random tweets')
+  let limit = count > tweets.length ? Math.min(tweets.length, 10) : count
   let selected = {}
   let results = []
-  for (var i = 0; i < count; i++) {
+  for (var i = 0; i < limit; i++) {
     let rand = Math.floor(Math.random() * tweets.length)
     while (selected[rand]) {
       rand = Math.floor(Math.random() * tweets.length)
@@ -272,7 +272,34 @@ function rankDictionary (dictionary) {
   return ranked
 }
 
-function processTweets (tweetList, max, callback) {
+function isRetweet (tweet) {
+  let words = cleanTweet(tweet).split(' ')
+  for (var i = 0; i < words.length; i++) {
+    let word = words[i].toLowerCase()
+    let rt = word === 'rt'
+    let mention = word.search(/(rt@)/) !== -1
+    let emoji = word.search(/[^\w\s@#]rt/) !== -1
+    let skip = rt || mention || emoji
+    if (skip) {
+      return true
+    }
+  }
+  return false
+}
+
+function removeRetweets (list) {
+  let results = []
+  let num = list.length
+  for (let i = 0; i < num; i++) {
+    if (!isRetweet(list[i].text)) {
+      results.push(list[i])
+    }
+  }
+  return results
+}
+
+function processTweets (list, max, retweets, callback) {
+  let tweetList = retweets ? list : removeRetweets(list)
   console.log('Processing', tweetList.length, 'tweets...')
   let dictionary = buildDictionary(tweetList)
   let wordScore = createScores(dictionary.frequency)
@@ -286,7 +313,7 @@ function processTweets (tweetList, max, callback) {
   // printArray(random)
   // printArray(tweetList.slice(-5))
   // // console.log(rankDictionary(dictionary.grams))
-  callback({'tweets': printTweets(tweetList, max).concat(random), 'dictionary': dictionary})
+  callback({'selected': printTweets(tweetList, max), 'random': random, 'dictionary': dictionary})
 }
 
 function cleanUsername (username, max) {
