@@ -10,7 +10,7 @@ Open web brower (Chrome is recommended but not necessary) and navigate to `http:
 ## How does this work?
 It fetches ~3200 most recent tweets, processes the collection, scores each tweet, then presents the top 10 representative tweets for you to enjoy. A random sample of 10 tweets is also available for comparison. See for yourself if the algorithm does a better job than picking at random! A chart of the user's monthly average sentiment and top 25 words are also available.
 
-## Okay, you say "representative tweet". What's that even mean?
+## Okay, you say "representative tweet", but what's that even mean?
 Fair question, a representative tweet in this instance is considered an summary reflection of the user's interests, attitude, and values or essentially: "Does this sound like something the user would say?".
 
 ## How did you determine these scores?
