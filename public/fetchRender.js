@@ -27,7 +27,6 @@ function fetchTweets (username) {
   }
   clearContainer('#selectedTweets')
   clearContainer('#randomTweets')
-  clearContainer('#userAnalysis')
   clearContainer('#displayMenu')
   renderLoading()
   if (username.length > 0) {
@@ -47,8 +46,10 @@ function fetchTweets (username) {
         currentTab = '#selectedTweets'
         renderTweets(data.random, '#randomTweets')
         $('#randomTweets').hide()
+        $('#userAnalysis').hide()
+        $('#chartCanvas').show()
         renderUser(data.selected[0].user)
-        // renderFreq(data[1])
+        updateChart(data.stats)
       }
     })
   } else {
@@ -93,10 +94,10 @@ function renderUser (user) {
   let profileImageBig = profileImage.replace(/_normal/g, '')
   profileImage = imageExists(profileImageBig) ? profileImageBig : profileImage
 
-  $user = $('<div>', {"class": "userPicAndStats"})
+  $user = $('<div>', {"class": "userPicAndStats row"})
   let urlInfo = user.entities.url ? user.entities.url.urls[0] : {expanded_url: '', display_url: ''}
-  let userPicAndStats = `<img class="img-rounded userPic" src="${profileImage}"/>\
-                        <div class="userStats"><h2>${user.name}</h2><h4>${parseTweet('@' + user.screen_name)}</h4>\
+  let userPicAndStats = `<div class="col-xs-4"><img class="img-rounded userPic" src="${profileImage}"/></div>\
+                        <div class="userStats col-xs-8"><h2>${user.name}</h2><h4>${parseTweet('@' + user.screen_name)}</h4>\
                         <span class="glyphicon glyphicon-user" aria-hidden="true"></span> ${parseTweet(user.description)}<br>\
                         <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> ${user.location}<br>\
                         <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span> ${addCommas(user.followers_count)}<br>\
@@ -107,8 +108,52 @@ function renderUser (user) {
   $('#sidePanel').append($user)
 }
 
-function renderFreq (data) {
-  $('#sidePanel').append('<p>' + JSON.stringify(data) + '</p>')
+function createChart () {
+  let $container = document.getElementById('userAnalysis')
+  $container.append('')
+  let ctx = document.getElementById('chartCanvas').getContext('2d')
+  let chart = new Chart(ctx, {
+    type: 'horizontalBar',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Top 25 Words',
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgb(255, 99, 132)',
+        data: []
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Top 25 Words',
+        fontSize: 30
+      }
+    }
+  })
+  return chart
+}
+
+function addData (tuple) {
+  window.twitterChart.data.labels.push(tuple[0])
+  window.twitterChart.data.datasets[0].data.push(tuple[1])
+}
+
+function clearData () {
+  window.twitterChart.data.labels = []
+  window.twitterChart.data.datasets[0].data = []
+}
+
+function updateChart (array) {
+  clearData()
+  for (var i = 0; i < array.length; i++) {
+    addData(array[i])
+  }
+  window.twitterChart.update()
 }
 
 function bindSwitch (button, container) {

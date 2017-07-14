@@ -2,6 +2,7 @@ const bignum = require('bignum')
 const request = require('request')
 const stopWords = require('./stopwords.js')
 const sentiment = require('./sentiment/lib/index.js')
+const useStop = stopWords.std
 
 function getTweets (token, username, list, currCount, maxCount, maxID, callback, errorHandle) {
   let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&exclude_replies=true&include_rts=false'
@@ -45,13 +46,14 @@ function getTweets (token, username, list, currCount, maxCount, maxID, callback,
 
 function cleanTweet (original) {
   let tweet = original.slice()
-  tweet = tweet.replace(/[\n]/g, ' ')
-  tweet = tweet.replace(/(http:\/\/[\S]*)/ig, '')
-  tweet = tweet.replace(/(https:\/\/[\S]*)/ig, '')
-  tweet = tweet.replace(/[\.]@/g, 'rt@')
-  tweet = tweet.replace(/[\"\.\?\!\+\,\:\(\)\/\\\*\^\|]/g, '')
-  tweet = tweet.replace(/[\s]+/g, ' ')
-  return tweet.trim()
+  return tweet.replace(/[\n]/g, ' ')
+              .replace(/(http:\/\/[\S]*)/ig, '')
+              .replace(/(https:\/\/[\S]*)/ig, '')
+              .replace(/[a-zA-Z0-9\"\.\?\!\+\,\:\(\)\/\\\*\^\|]@/g, 'rt@')
+              .replace(/[\s\b][-—_]+[\s\b]/, ' ')
+              .replace(/[\"\.\?\!\+\,\:\(\)\/\\\*\^\|]/g, '')
+              .replace(/[\s]+/g, ' ')
+              .trim()
 }
 
 function isStopword (stopwords, word) {
@@ -101,7 +103,7 @@ function countWords (tweet) {
         }
       }
     }
-    if (word && !isStopword(stopWords.mini, word)) {
+    if (word && !isStopword(useStop, word)) {
       if (counts.frequency[word]) {
         counts.frequency[word]++
       } else {
@@ -259,17 +261,22 @@ function printObject (obj) {
   }
 }
 
-function rankDictionary (dictionary) {
-  var ranked = []
-  for (var word in dictionary) {
+function getTopRanks (dictionary, count) {
+  let ranked = []
+  let final = []
+  for (let word in dictionary) {
     if (dictionary[word] > 0) {
-      ranked.push([dictionary[word], word])
+      ranked.push([word, dictionary[word]])
     }
   }
-  ranked.sort(function (a, b) {
-    return b[0] - a[0]
+  ranked = ranked.sort(function (a, b) {
+    return b[1] - a[1]
   })
-  return ranked
+  let limit = ranked.length < count ? Math.min(10, ranked.length) : count
+  for (let i = 0; i < limit; i++) {
+    final.push(ranked[i])
+  }
+  return final
 }
 
 function isRetweet (tweet) {
@@ -308,12 +315,11 @@ function processTweets (list, max, retweets, callback) {
   scoreTweets(gramScore, dictionary.grams, tweetList, true)
   let random = retweets ? randomTweets(removeRetweets(tweetList), 10) : randomTweets(tweetList, 10)
   sortTweets(tweetList)
-  // printArray(rankDictionary(dictionary))
   printArray(printTweets(tweetList, max))
   // printArray(random)
   // printArray(tweetList.slice(-5))
-  // // console.log(rankDictionary(dictionary.grams))
-  callback({'selected': printTweets(tweetList, max), 'random': random, 'dictionary': dictionary})
+  // // console.log(getTopRanks(dictionary.grams))
+  callback({ 'selected': printTweets(tweetList, max), 'random': random, 'stats': getTopRanks(dictionary.frequency, 25) })
 }
 
 function cleanUsername (username, max) {

@@ -6779,25 +6779,23 @@ button.close {
   overflow: hidden;
 }
 
-#menuContainer {
-  position: fixed;
-}
-
 #displayContainer {
-  position: absolute;
   display: flex;
   flex-flow: column;
-  top: 0;
-  right: 0;
   height: 100%;
 }
 
-#selectedTweets, #randomTweets, #userAnalysis {
+#selectedTweets, #randomTweets {
   padding-right: 15px;
   margin-right: -30px;
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: 4px;
+}
+
+#userAnalysis {
+  border-radius: 4px;
+  min-height: 75%;
 }
 
 #displayContainer:first-child {
@@ -6808,14 +6806,19 @@ button.close {
   margin: 0 0 10px 0;
 }
 
-#selectedTweets .tweetContainer:last-child, #randomTweets .tweetContainer:last-child, #userAnalysis .tweetContainer:last-child {
-  margin-bottom: 0;
-}
-
 #displayBanner span {
   font-weight: 800;
   font-size: 2em;
   margin: auto;
+}
+
+#selectedTweets .tweetContainer:last-child, #randomTweets .tweetContainer:last-child, #userAnalysis .tweetContainer:last-child {
+  margin-bottom: 0;
+}
+
+#chartCanvas {
+  display: none;
+  padding: 5px 10px;
 }
 
 #sidePanel {
@@ -6830,12 +6833,12 @@ button.close {
 }
 
 .userPic {
-  max-width: 35%;
-  float: left;
+  margin: 10px 0;
+  max-height: 100%;
+  max-width: 100%;
 }
 
 .userStats {
-  margin-left: 35%;
   margin-bottom: 20px;
   padding-left: 10px;
 }

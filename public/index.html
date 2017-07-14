@@ -6,13 +6,14 @@
     src="https://code.jquery.com/jquery-3.2.1.min.js"
     integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
     crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="/bootstrap.css">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
   <script src="/fetchRender.js"></script>
+  <link rel="stylesheet" href="/bootstrap.css">
 </head>
 <body>
   <div id="mainContainer" class="container-fluid">
     <div class="row">
-      <div id="menuContainer" class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+      <div id="menuContainer" class="col-md-4">
         <div class="panel-body">
           <form>
             <div class="form-group">
@@ -32,7 +33,7 @@
           </div>
         </div>
       </div>
-      <div id="displayContainer" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 panel-body">
+      <div id="displayContainer" class="col-md-8 panel-body">
         <div id="displayBanner" class="tweetContainer panel">
           <span>Welcome to Top 10 Tweets!</span>
         </div>
@@ -43,10 +44,13 @@
         <div id="randomTweets">
         </div>
         <div id="userAnalysis">
+          <canvas id="chartCanvas" class="panel" height="300px" width="400px"></canvas>
         </div>
       </div>
     </div>
   </div>
-  <script>$(document).ready(bindButtons)</script>
+  <script>
+    $(document).ready(function () { bindButtons(); window.twitterChart = createChart(); $('#chartCanvas').hide() })
+  </script>
 </body>
 </html>
