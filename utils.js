@@ -191,7 +191,7 @@ function setScore (scores, dictionary, tweet, avgSent, avgCompSent) {
   let score = 0
   let wordScores = []
   for (let word in words) {
-    score += scores[dictionary[word]] * words[word]
+    score += scores[dictionary[word]] * Math.pow(1.05, words[word])
     wordScores.push([word, scores[dictionary[word]]])
   }
   tweet.score = score / (tweet.diffCompSent + 1)
