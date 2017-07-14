@@ -83,9 +83,9 @@ function countWords (tweet) {
   let wordCount = words.length
   for (let i = 0; i < wordCount; i++) {
     let word = words[i].toLowerCase()
-    let rt = word === 'rt'
-    let mention = word.search(/(rt@)/) !== -1
-    let emoji = word.search(/[^\w\s@#]rt/) !== -1
+    let rt = word === 'rt' || word === 'mt'
+    let mention = word.search(/(rt@)/) !== -1 || word.search(/(mt@)/) !== -1
+    let emoji = word.search(/[^\w\s@#]rt/) !== -1 || word.search(/[^\w\s@#]mt/) !== -1
     let skip = rt || mention || emoji
     if (skip) {
       return {
@@ -306,7 +306,7 @@ function processTweets (list, max, retweets, callback) {
   let gramScore = createScores(dictionary.grams)
   scoreTweets(wordScore, dictionary.frequency, tweetList, false, dictionary.sentiment.avgSentiment, dictionary.sentiment.avgCompSentiment)
   scoreTweets(gramScore, dictionary.grams, tweetList, true)
-  let random = randomTweets(tweetList, 10)
+  let random = retweets ? randomTweets(removeRetweets(tweetList), 10) : randomTweets(tweetList, 10)
   sortTweets(tweetList)
   // printArray(rankDictionary(dictionary))
   printArray(printTweets(tweetList, max))
