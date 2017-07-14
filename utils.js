@@ -269,7 +269,7 @@ function getTopRanks (dictionary, count) {
       ranked.push([word, dictionary[word]])
     }
   }
-  ranked = ranked.sort(function (a, b) {
+  ranked.sort(function (a, b) {
     return b[1] - a[1]
   })
   let limit = ranked.length < count ? Math.min(10, ranked.length) : count
@@ -277,6 +277,45 @@ function getTopRanks (dictionary, count) {
     final.push(ranked[i])
   }
   return final
+}
+
+function getDate (string) {
+  const months = {
+    'Jan': 1,
+    'Feb': 2,
+    'Mar': 3,
+    'Apr': 4,
+    'May': 5,
+    'Jun': 6,
+    'Jul': 7,
+    'Aug': 8,
+    'Sep': 9,
+    'Oct': 10,
+    'Nov': 11,
+    'Dec': 12
+  }
+  let dString = string.slice()
+  let month = months[dString.substr(4, 3)]
+  let date = parseInt(dString.substr(8, 2))
+  let hour = parseInt(dString.substr(11, 2))
+  let min = parseInt(dString.substr(14, 2))
+  let sec = parseInt(dString.substr(17, 2))
+  let year = parseInt(dString.substr(26, 4))
+  let d = new Date(year, month, date, hour, min, sec)
+  return d
+}
+
+function sentimentTimeline (tweets) {
+  let results = []
+  let limit = tweets.length
+  for (let i = 0; i < limit; i++) {
+    let d = getDate(tweets[i].created_at)
+    results.push([d, tweets[i].word_counts.sentiment.score])
+  }
+  results.sort(function (a, b) {
+    return a[0].getTime() - b[0].getTime()
+  })
+  return results
 }
 
 function isRetweet (tweet) {
@@ -319,7 +358,7 @@ function processTweets (list, max, retweets, callback) {
   // printArray(random)
   // printArray(tweetList.slice(-5))
   // // console.log(getTopRanks(dictionary.grams))
-  callback({ 'selected': printTweets(tweetList, max), 'random': random, 'stats': getTopRanks(dictionary.frequency, 25) })
+  callback({ 'selected': printTweets(tweetList, max), 'random': random, 'stats': { frequency: getTopRanks(dictionary.frequency, 25), sentiment: sentimentTimeline(tweetList) } })
 }
 
 function cleanUsername (username, max) {

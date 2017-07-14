@@ -47,9 +47,22 @@ function fetchTweets (username) {
         renderTweets(data.random, '#randomTweets')
         $('#randomTweets').hide()
         $('#userAnalysis').hide()
-        $('#chartCanvas').show()
+        window.sentimentData = data.stats.sentiment
+        window.frequencyData = data.stats.frequency
+        if (window.twitterChart) {
+          updateChart(window.twitterChart, window.frequencyData)
+        } else {
+          window.twitterChart = createChart()
+          updateChart(window.twitterChart, window.frequencyData)
+        }
+        if (window.sentimentLine) {
+          updateChart(window.sentimentLine, window.sentimentData)
+        } else {
+          window.sentimentLine = createLine()
+          updateChart(window.sentimentLine, window.sentimentData)
+        }
         renderUser(data.selected[0].user)
-        updateChart(data.stats)
+        
       }
     })
   } else {
@@ -138,25 +151,71 @@ function createChart () {
   return chart
 }
 
-function addData (tuple) {
-  window.twitterChart.data.labels.push(tuple[0])
-  window.twitterChart.data.datasets[0].data.push(tuple[1])
+function createLine () {
+  let $container = document.getElementById('userAnalysis')
+  $container.append('')
+  let ctx = document.getElementById('sentimentCanvas').getContext('2d')
+  let chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Sentiment Over Time',
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgb(255, 99, 132)',
+        data: []
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Sentiment Over Time',
+        fontSize: 30
+      }
+    }
+  })
+  return chart
 }
 
-function clearData () {
-  window.twitterChart.data.labels = []
-  window.twitterChart.data.datasets[0].data = []
+function addData (chart, tuple) {
+  chart.data.labels.push(tuple[0])
+  chart.data.datasets[0].data.push(tuple[1])
 }
 
-function updateChart (array) {
-  clearData()
+function clearData (chart) {
+  chart.data.labels = []
+  chart.data.datasets[0].data = []
+}
+
+function updateChart (chart, array) {
+  clearData(chart)
   for (var i = 0; i < array.length; i++) {
-    addData(array[i])
+    addData(chart, array[i])
   }
-  window.twitterChart.update()
+  chart.update()
 }
+
+// function updateChart (chart, array) {
+//   if (array.length < 1) {
+//     return
+//   }
+//   let data = array.slice()
+//   let point = data.pop()
+//   addData(chart, point)
+//   updateChart(chart, data)
+// }
 
 function bindSwitch (button, container) {
+  if (button === '#analysisButton') {
+    $(button).bind('click', function () {
+      switchDisplay(currentTab, container)
+      updateChart(window.sentimentLine, window.sentimentData)
+    })
+  }
   $(button).bind('click', function () {
     switchDisplay(currentTab, container)
   })

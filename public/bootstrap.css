@@ -6785,7 +6785,7 @@ button.close {
   height: 100%;
 }
 
-#selectedTweets, #randomTweets {
+#selectedTweets, #randomTweets, #userAnalysis {
   padding-right: 15px;
   margin-right: -30px;
   overflow-y: auto;
@@ -6794,8 +6794,11 @@ button.close {
 }
 
 #userAnalysis {
-  border-radius: 4px;
   min-height: 75%;
+}
+
+#userAnalysis:last-childe {
+  margin-bottom: 0;
 }
 
 #displayContainer:first-child {
@@ -6819,6 +6822,11 @@ button.close {
 #chartCanvas {
   display: none;
   padding: 5px 10px;
+  margin-bottom: 0;
+}
+
+#sentimentCanvas {
+  display: none;
 }
 
 #sidePanel {
