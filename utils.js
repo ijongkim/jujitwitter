@@ -50,8 +50,8 @@ function cleanTweet (original) {
               .replace(/(http:\/\/[\S]*)/ig, '')
               .replace(/(https:\/\/[\S]*)/ig, '')
               .replace(/[a-zA-Z0-9\"\.\?\!\+\,\:\(\)\/\\\*\^\|&]@/g, 'rt@')
-              .replace(/[\s\b][-—_]+[\s\b]/, ' ')
-              .replace(/[\"\.\?\!\+\,\:\(\)\/\\\*\^\|&]/g, '')
+              .replace(/[\s\b][-—_]+[\s\b]/g, ' ')
+              .replace(/[\"\.\?\!\+\,\:\(\)\/\\\*\^\|]/g, '')
               .replace(/[\s]+/g, ' ')
               .trim()
 }
@@ -203,10 +203,15 @@ function setScore (scores, dictionary, tweet, avgSent, avgCompSent) {
 function setScoreGrams (scores, dictionary, tweet) {
   let grams = tweet.word_counts.grams
   let score = 1
+  let gramScores = []
   for (var gram in grams) {
     score += scores[dictionary[gram]]
+    if (scores[dictionary[gram]] > 0) {
+      gramScores.push([gram, scores[dictionary[gram]]])
+    }
   }
   tweet.score = tweet.score / score
+  tweet.gram_scores = gramScores
 }
 
 function scoreTweets (scores, dictionary, tweets, grams, avgSent, avgCompSent) {

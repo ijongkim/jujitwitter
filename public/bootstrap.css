@@ -6868,7 +6868,50 @@ button.close {
 }
 
 .tweetFooter span:first-child {
-  margin: auto 20px auto 10px;
+  margin: auto 2%;
+}
+
+.tweetFooter span:first-child.statsContainer span:first-child {
+  margin: 10px;
+}
+
+.tweetScore {
+  display: relative;
+}
+
+.statsContainer {
+  position: absolute;
+  display: flex;
+  flex-flow: row;
+  border-radius: 4px;
+  top: -90px;
+  left: 90px;
+  z-index: 20;
+  padding: 10px;
+  background-color: #fff;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+  background-clip: padding-box;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+.insideContainer {
+  display: flex;
+  flex-flow: row;
+}
+
+.statsDisplay {
+  margin: 0 10px;
+}
+
+.statTitle {
+  margin: 0 auto;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.singleStat {
+  margin-right: 10px;
 }
 
 .tweetScore, .tweetLikes, .tweetRTs, .tweetTime {

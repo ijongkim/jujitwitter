@@ -84,19 +84,67 @@ function renderTweets (tweets, container) {
       return b[1] - a[1]
     })
     wordScores = wordScores.slice(0, 10)
-    $div = $('<div>', {"class": "tweetContainer panel"})
-    $header = $('<div>', {"class": "panel-header"})
+    let gramScores = tweets[i].gram_scores
+    gramScores.sort(function (a, b) {
+      return b[1] - a[1]
+    })
+    gramScores = gramScores.slice(0, 5)
+    let $div = $('<div>', {"class": "tweetContainer panel"})
+    let $header = $('<div>', {"class": "panel-header"})
     $header.append('<h3 class="panel-title">#' + (i + 1) + '</h3>')
     $div.append($header)
     $div.append('<div class="tweetText panel-body"><h4>' + parseTweet(tweets[i].text) + '</h4></div>')
-    $footer = $('<div>', {"class": "tweetFooter panel-footer"})
-    $footer.append('<span class="tweetScore col-md-3"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span>' + Math.floor(tweets[i].score) + '</span>')
+    let $footer = $('<div>', {"class": "tweetFooter panel-footer"})
+    let $stats = $('<span>', {"class": "tweetScore col-md-3"})
+    let $statsButton = $('<span>', {"class": "btn-group"})
+    $statsButton.append(
+      $('<button>', {"type": "button", "class": "btn btn-default dropdown-toggle", "data-toggle": "dropdown"})
+        .append($('<span>', {"class": "glyphicon glyphicon-stats"}))
+        .append(`${Math.floor(tweets[i].score)} `)
+    )
+    let $statsContainer = $('<div>', {"class": "statsContainer"})
+    $statsContainer.append(renderStats(wordScores, 'Word Scores'))
+    if (gramScores.length > 0) {
+      $statsContainer.append(renderStats(gramScores, 'Gram Scores'))
+    }
+    $statsContainer.hide()
+    $statsButton.bind('click', function (display) {
+      $statsContainer.toggle()
+    })
+    $stats.append($statsButton).append($statsContainer)
+    $footer.append($stats)
     $footer.append('<span class="tweetLikes col-md-3"><span class="glyphicon glyphicon-heart" aria-hidden="true"></span>' + tweets[i].favorite_count + '</span>')
     $footer.append('<span class="tweetRTs col-md-3"><span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>' + tweets[i].retweet_count + '</span>')
     $footer.append('<span class="tweetTime col-md-3"><span class="glyphicon glyphicon-time" aria-hidden="true"></span>' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
     $div.append($footer)
     $(container).append($div)
   }
+}
+
+function renderStats (stats, title) {
+  let $display = $('<span>', {"class": "statsDisplay"})
+  $display.append(`<span class="statTitle">${title}</span>`)
+  let $insideContainer = $('<div>', {"class": "insideContainer"})
+  if (stats.length > 5) {
+    let $insidePanel = $('<span>', {"class": "insidePanel"})
+    for (let i = 0; i < 5; i++) {
+      $insidePanel.append(`<div class="singleStat">${stats[i][0]}: ${stats[i][1]}</div>`)
+    }
+    $insideContainer.append($insidePanel)
+    let $insidePanel2 = $('<span>', {"class": "insidePanel"})
+    for (let i = 5; i < stats.length; i++) {
+      $insidePanel2.append(`<div class="singleStat">${stats[i][0]}: ${stats[i][1]}</div>`)
+    }
+    $insideContainer.append($insidePanel2)
+  } else {
+    let $insidePanel = $('<span>', {"class": "insidePanel"})
+    for (let i = 0; i < stats.length; i++) {
+      $insidePanel.append(`<div class="singleStat">${stats[i][0]}: ${stats[i][1]}</div>`)
+    }
+    $insideContainer.append($insidePanel)
+  }
+  $display.append($insideContainer)
+  return $display
 }
 
 function imageExists (imageUrl) {
