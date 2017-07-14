@@ -6785,6 +6785,10 @@ button.close {
   height: 100%;
 }
 
+#welcomePanel {
+  padding: 0 20px 10px 20px;
+}
+
 #selectedTweets, #randomTweets, #userAnalysis {
   padding-right: 15px;
   margin-right: -30px;

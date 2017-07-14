@@ -31,11 +31,13 @@ function fetchTweets (username) {
   renderLoading()
   if (username.length > 0) {
     updateTopBanner('Analyzing @' + cleanUsername(username, 15) + '\'s tweets...')
+    $('#welcomePanel').show()
     $.ajax({
       url: '/getTweets',
       data: {username: username},
       method: 'POST',
       success: function (data) {
+        $('#welcomePanel').hide()
         if (typeof data === 'string') {
           updateTopBanner(data)
         } else {
