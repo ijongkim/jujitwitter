@@ -89,7 +89,7 @@ function imageExists (imageUrl) {
 
 function renderUser (user) {
   clearContainer('#sidePanel')
-  let profileImage = user.profile_image_url
+  let profileImage = user.profile_image_url_https
   let profileImageBig = profileImage.replace(/_normal/g, '')
   profileImage = imageExists(profileImageBig) ? profileImageBig : profileImage
 
