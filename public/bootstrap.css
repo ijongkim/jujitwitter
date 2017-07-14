@@ -6845,8 +6845,8 @@ button.close {
   margin: 10px 0px;
 }
 
-.tweetText {
-  margin: 10px 1% 20px 1%;
+.tweetText.panel-body {
+  padding: 5px;
 }
 
 .tweetFooter span:first-child {

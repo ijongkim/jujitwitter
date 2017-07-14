@@ -66,7 +66,10 @@ function renderTweets (tweets, container) {
   clearContainer(container)
   for (var i = 0; i < tweets.length; i++) {
     $div = $('<div>', {"class": "tweetContainer panel"})
-    $div.append('<div class="tweetText"><h4>#' + (i + 1) + '    ' + parseTweet(tweets[i].text) + '</h4></div>')
+    $header = $('<div>', {"class": "panel-header"})
+    $header.append('<h3 class="panel-title">#' + (i + 1) + '</h3>')
+    $div.append($header)
+    $div.append('<div class="tweetText panel-body"><h4>' + parseTweet(tweets[i].text) + '</h4></div>')
     $footer = $('<div>', {"class": "tweetFooter panel-footer"})
     $footer.append('<span class="tweetScore"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span>' + Math.floor(tweets[i].score) + '</span>')
     $footer.append('<span class="tweetLikes"><span class="glyphicon glyphicon-heart" aria-hidden="true"></span>' + tweets[i].favorite_count + '</span>')

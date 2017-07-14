@@ -276,9 +276,9 @@ function isRetweet (tweet) {
   let words = cleanTweet(tweet).split(' ')
   for (var i = 0; i < words.length; i++) {
     let word = words[i].toLowerCase()
-    let rt = word === 'rt'
-    let mention = word.search(/(rt@)/) !== -1
-    let emoji = word.search(/[^\w\s@#]rt/) !== -1
+    let rt = word === 'rt' || word === 'mt'
+    let mention = word.search(/(rt@)/) !== -1 || word.search(/(mt@)/) !== -1
+    let emoji = word.search(/[^\w\s@#]rt/) !== -1 || word.search(/[^\w\s@#]mt/) !== -1
     let skip = rt || mention || emoji
     if (skip) {
       return true
