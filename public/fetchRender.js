@@ -77,10 +77,18 @@ function renderTweets (tweets, container) {
   }
 }
 
+function imageExists (imageUrl) {
+  let http = new XMLHttpRequest()
+  http.open('HEAD', imageUrl, false)
+  http.send()
+  return http.status !== 404
+}
+
 function renderUser (user) {
   clearContainer('#sidePanel')
   let profileImage = user.profile_image_url
-  profileImage = profileImage.replace(/_normal/g, '')
+  let profileImageBig = profileImage.replace(/_normal/g, '')
+  profileImage = imageExists(profileImageBig) ? profileImageBig : profileImage
 
   $user = $('<div>', {"class": "userPicAndStats"})
   let urlInfo = user.entities.url ? user.entities.url.urls[0] : {expanded_url: '', display_url: ''}
