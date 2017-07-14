@@ -487,7 +487,7 @@ const stopWordsStd = {
 }
 
 const stopWordsMini = {
-  '%amp;': 1,
+  '&amp;': 1,
   'a': 1,
   'an': 1,
   'and': 1,

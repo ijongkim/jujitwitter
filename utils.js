@@ -49,9 +49,9 @@ function cleanTweet (original) {
   return tweet.replace(/[\n]/g, ' ')
               .replace(/(http:\/\/[\S]*)/ig, '')
               .replace(/(https:\/\/[\S]*)/ig, '')
-              .replace(/[a-zA-Z0-9\"\.\?\!\+\,\:\(\)\/\\\*\^\|]@/g, 'rt@')
+              .replace(/[a-zA-Z0-9\"\.\?\!\+\,\:\(\)\/\\\*\^\|&]@/g, 'rt@')
               .replace(/[\s\b][-—_]+[\s\b]/, ' ')
-              .replace(/[\"\.\?\!\+\,\:\(\)\/\\\*\^\|]/g, '')
+              .replace(/[\"\.\?\!\+\,\:\(\)\/\\\*\^\|&]/g, '')
               .replace(/[\s]+/g, ' ')
               .trim()
 }
@@ -189,11 +189,15 @@ function setScore (scores, dictionary, tweet, avgSent, avgCompSent) {
   tweet.diffSent = Math.abs(tweet.word_counts.sentiment.score - avgSent)
   tweet.diffCompSent = Math.abs(tweet.word_counts.sentiment.comparative - avgCompSent)
   let score = 0
+  let wordScores = []
   for (let word in words) {
     score += scores[dictionary[word]] * words[word]
+    wordScores.push([word, scores[dictionary[word]]])
   }
   tweet.score = score / (tweet.diffCompSent + 1)
+  // tweet.score = score / (tweet.diffSent + 1)
   // tweet.score = score
+  tweet.word_scores = wordScores
 }
 
 function setScoreGrams (scores, dictionary, tweet) {
@@ -248,19 +252,6 @@ function randomTweets (tweets, count) {
   return results
 }
 
-function printArray (array) {
-  for (var i = 0; i < array.length; i++) {
-    // console.log(array[i].text, array[i].score, array[i].diffSent, array[i].diffCompSent)
-    console.log(array[i].text + '\n')
-  }
-}
-
-function printObject (obj) {
-  for (let key in obj) {
-    console.log(key)
-  }
-}
-
 function getTopRanks (dictionary, count) {
   let ranked = []
   let final = []
@@ -301,19 +292,46 @@ function getDate (string) {
   let min = parseInt(dString.substr(14, 2))
   let sec = parseInt(dString.substr(17, 2))
   let year = parseInt(dString.substr(26, 4))
-  let d = new Date(year, month, date, hour, min, sec)
+  let d = new Date(year, month)
   return d
 }
 
 function sentimentTimeline (tweets) {
   let results = []
+  let groups = {}
   let limit = tweets.length
   for (let i = 0; i < limit; i++) {
     let d = getDate(tweets[i].created_at)
-    results.push([d, tweets[i].word_counts.sentiment.score])
+    results.push([`${d.getMonth() + 1}-${d.getFullYear()}`, tweets[i].word_counts.sentiment.score])
+  }
+  for (var j = 0; j < limit; j++) {
+    let date = results[j][0]
+    if (groups[date]) {
+      groups[date].push(results[j][1])
+    } else {
+      groups[date] = [results[j][1]]
+    }
+  }
+  results = []
+  for (var date in groups) {
+    var sum = groups[date].reduce(function (sum, value) {
+      return sum + value
+    }, 0)
+    results.push([date, sum / groups[date].length])
   }
   results.sort(function (a, b) {
-    return a[0].getTime() - b[0].getTime()
+    let aDate = a[0].split('-')
+    let bDate = b[0].split('-')
+    let aMonth = parseInt(aDate[0])
+    let aYear = parseInt(aDate[1])
+    let bMonth = parseInt(bDate[0])
+    let bYear = parseInt(bDate[1])
+
+    if (bDate[1] === aDate[1]) {
+      return aMonth - bMonth
+    } else {
+      return aYear - bYear
+    }
   })
   return results
 }
@@ -354,10 +372,6 @@ function processTweets (list, max, retweets, callback) {
   scoreTweets(gramScore, dictionary.grams, tweetList, true)
   let random = retweets ? randomTweets(removeRetweets(tweetList), 10) : randomTweets(tweetList, 10)
   sortTweets(tweetList)
-  printArray(printTweets(tweetList, max))
-  // printArray(random)
-  // printArray(tweetList.slice(-5))
-  // // console.log(getTopRanks(dictionary.grams))
   callback({ 'selected': printTweets(tweetList, max), 'random': random, 'stats': { frequency: getTopRanks(dictionary.frequency, 25), sentiment: sentimentTimeline(tweetList) } })
 }
 
@@ -367,15 +381,5 @@ function cleanUsername (username, max) {
 }
 
 module.exports.getTweets = getTweets
-module.exports.cleanTweet = cleanTweet
-module.exports.isStopword = isStopword
-module.exports.countWords = countWords
-module.exports.buildDictionary = buildDictionary
-module.exports.createScores = createScores
-module.exports.setScore = setScore
-module.exports.setScoreNorm = setScoreGrams
-module.exports.scoreTweets = scoreTweets
-module.exports.sortTweets = sortTweets
-module.exports.printTweets = printTweets
 module.exports.processTweets = processTweets
 module.exports.cleanUsername = cleanUsername

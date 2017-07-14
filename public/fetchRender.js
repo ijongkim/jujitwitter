@@ -79,16 +79,21 @@ function printTweets (list) {
 function renderTweets (tweets, container) {
   clearContainer(container)
   for (var i = 0; i < tweets.length; i++) {
+    let wordScores = tweets[i].word_scores
+    wordScores.sort(function (a, b) {
+      return b[1] - a[1]
+    })
+    wordScores = wordScores.slice(0, 10)
     $div = $('<div>', {"class": "tweetContainer panel"})
     $header = $('<div>', {"class": "panel-header"})
     $header.append('<h3 class="panel-title">#' + (i + 1) + '</h3>')
     $div.append($header)
     $div.append('<div class="tweetText panel-body"><h4>' + parseTweet(tweets[i].text) + '</h4></div>')
     $footer = $('<div>', {"class": "tweetFooter panel-footer"})
-    $footer.append('<span class="tweetScore"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span>' + Math.floor(tweets[i].score) + '</span>')
-    $footer.append('<span class="tweetLikes"><span class="glyphicon glyphicon-heart" aria-hidden="true"></span>' + tweets[i].favorite_count + '</span>')
-    $footer.append('<span class="tweetRTs"><span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>' + tweets[i].retweet_count + '</span>')
-    $footer.append('<span class="tweetTime"><span class="glyphicon glyphicon-time" aria-hidden="true"></span>' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
+    $footer.append('<span class="tweetScore col-md-3"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span>' + Math.floor(tweets[i].score) + '</span>')
+    $footer.append('<span class="tweetLikes col-md-3"><span class="glyphicon glyphicon-heart" aria-hidden="true"></span>' + tweets[i].favorite_count + '</span>')
+    $footer.append('<span class="tweetRTs col-md-3"><span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>' + tweets[i].retweet_count + '</span>')
+    $footer.append('<span class="tweetTime col-md-3"><span class="glyphicon glyphicon-time" aria-hidden="true"></span>' + tweets[i].created_at.slice(0, 11) + tweets[i].created_at.slice(-4) + '</span>')
     $div.append($footer)
     $(container).append($div)
   }
@@ -130,7 +135,7 @@ function createChart () {
     data: {
       labels: [],
       datasets: [{
-        label: 'Top 25 Words',
+        label: 'Count',
         backgroundColor: 'rgb(255, 99, 132)',
         borderColor: 'rgb(255, 99, 132)',
         data: []
@@ -160,9 +165,11 @@ function createLine () {
     data: {
       labels: [],
       datasets: [{
-        label: 'Sentiment Over Time',
+        label: 'Avg Sentiment',
         backgroundColor: 'rgb(255, 99, 132)',
         borderColor: 'rgb(255, 99, 132)',
+        pointRadius: 0,
+        pointHitRadius: 25,
         data: []
       }]
     },
@@ -173,7 +180,7 @@ function createLine () {
       },
       title: {
         display: true,
-        text: 'Sentiment Over Time',
+        text: 'Avg Sentiment/Tweet Over Time',
         fontSize: 30
       }
     }
@@ -210,12 +217,6 @@ function updateChart (chart, array) {
 // }
 
 function bindSwitch (button, container) {
-  if (button === '#analysisButton') {
-    $(button).bind('click', function () {
-      switchDisplay(currentTab, container)
-      updateChart(window.sentimentLine, window.sentimentData)
-    })
-  }
   $(button).bind('click', function () {
     switchDisplay(currentTab, container)
   })

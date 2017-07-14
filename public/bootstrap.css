@@ -6827,6 +6827,7 @@ button.close {
 
 #sentimentCanvas {
   display: none;
+  padding: 5px 10px;
 }
 
 #sidePanel {
@@ -6860,12 +6861,18 @@ button.close {
   padding: 5px;
 }
 
+.tweetFooter {
+  display: flex;
+  flex-flow: row;
+  width: 100%;
+}
+
 .tweetFooter span:first-child {
   margin: auto 20px auto 10px;
 }
 
 .tweetScore, .tweetLikes, .tweetRTs, .tweetTime {
-  margin: auto 40px;
+  margin: auto;
 }
 
 #submitButton {
