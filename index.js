@@ -46,10 +46,10 @@ app.use(express.static('public'))
 app.post('/getTweets', function (req, res) {
   if (storedToken) {
     console.log('Requesting with token:', storedToken)
-    utils.getTweets(storedToken, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, false, function (data) { res.send(data) }) }, function (data) { res.send(data) })
+    utils.getTweets(storedToken, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, true, function (data) { res.send(data) }) }, function (data) { res.send(data) })
   } else {
     console.log('Requesting token...')
-    getBearerToken(tBase, function (token) { utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, false, function (data) { res.send(data) }) }, function (data) { res.send(data) }) })
+    getBearerToken(tBase, function (token) { utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, true, function (data) { res.send(data) }) }, function (data) { res.send(data) }) })
   }
 })
 

@@ -367,15 +367,15 @@ function removeRetweets (list) {
   return results
 }
 
-function processTweets (list, max, retweets, callback) {
-  let tweetList = retweets ? list : removeRetweets(list)
+function processTweets (list, max, removeRTs, callback) {
+  let tweetList = removeRTs ? removeRetweets(list) : list
   console.log('Processing', tweetList.length, 'tweets...')
   let dictionary = buildDictionary(tweetList)
   let wordScore = createScores(dictionary.frequency)
   let gramScore = createScores(dictionary.grams)
   scoreTweets(wordScore, dictionary.frequency, tweetList, false, dictionary.sentiment.avgSentiment, dictionary.sentiment.avgCompSentiment)
   scoreTweets(gramScore, dictionary.grams, tweetList, true)
-  let random = retweets ? randomTweets(removeRetweets(tweetList), 10) : randomTweets(tweetList, 10)
+  let random = removeRTs ? randomTweets(tweetList, 10) : randomTweets(removeRetweets(tweetList), 10)
   sortTweets(tweetList)
   callback({ 'selected': printTweets(tweetList, max), 'random': random, 'stats': { frequency: getTopRanks(dictionary.frequency, 25), sentiment: sentimentTimeline(tweetList) } })
 }
