@@ -40,7 +40,8 @@ function setToken (token) {
 
 getBearerToken(tBase)
 
-app.use(bodyParser.urlencoded({ extended: true }))
+
+app.use(bodyParser.json())
 app.use(express.static('client'))
 
 app.post('/getTweets', function (req, res) {

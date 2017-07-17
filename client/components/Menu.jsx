@@ -6,7 +6,7 @@ export default class Menu extends React.Component {
   render () {
     return (
       <div id="menuContainer" className="col-md-4">
-        <Search />
+        <Search handleInputChange={this.props.handleInputChange} buttonSubmit={this.props.buttonSubmit} username={this.props.username} />
         <SideWelcome />
       </div>
     )

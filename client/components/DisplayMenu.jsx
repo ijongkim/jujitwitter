@@ -6,8 +6,8 @@ export default class DisplayMenu extends React.Component {
   render () {
     return (
       <div>
-        <DisplayBanner />
-        <MenuSwitches />
+        <DisplayBanner bannerText={this.props.bannerText} />
+        <MenuSwitches setDisplay={this.props.setDisplay} />
       </div>
     )
   }

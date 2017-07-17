@@ -1,29 +1,63 @@
 import React from 'react'
 import DisplayMenu from './DisplayMenu.jsx'
+import WelcomePanel from './WelcomePanel.jsx'
+import TweetList from './TweetList.jsx'
 
 export default class Display extends React.Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      bannerText: 'Welcome to Top 10 Tweets!',
+      currentDisplay: 'welcome'
+    }
+    this.bannerTexts = {
+      welcome: 'Welcome to Top 10 Tweets!',
+      selected: 'Top 10 Tweets',
+      random: 'Random 10 Tweets',
+      analysis: 'User Analysis'
+    }
+    this.setDisplay = this.setDisplay.bind(this)
+  }
+
+  setDisplay (section) {
+    this.setState({
+      bannerText: this.bannerTexts[section],
+      currentDisplay: section
+    })
+  }
+
+  renderDisplay (section) {
+    if (section === 'welcome') {
+      return <WelcomePanel />
+    } else if (section === 'selected') {
+      return <TweetList tweets={this.props.selected} />
+    } else if (section === 'random') {
+      return <TweetList tweets={this.props.random} />
+    } else if (section === 'analysis') {
+      return <h1>ANALYSIS</h1>
+    }
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (nextProps.selected.length > this.props.selected) {
+      this.setDisplay('selected')
+    } else if (nextProps.selected.length > 0 && this.props.selected.length > 0) {
+      const nextSelectedId = nextProps.selected[0].id_str
+      const prevSelectedId = this.props.selected[0].id_str
+      const nextRandomId = nextProps.random[0].id_str
+      const prevRandomId = this.props.random[0].id_str
+      if (nextSelectedId === prevSelectedId || nextRandomId === prevRandomId) {
+        this.setDisplay('selected')
+      }
+    }
+  }
+
   render () {
+    let display = this.renderDisplay(this.state.currentDisplay)
     return (
       <div id="displayContainer" className="col-md-8 panel-body">
-        <DisplayMenu />
-        
-
-        <div id="welcomePanel" class="panel">
-          <h3>How does this work?</h3>
-          <p>It fetches ~3200 most recent tweets, processes the collection, scores each tweet, then presents the top 10 representative tweets for you to enjoy. A random sample of 10 tweets is also available for comparison. See for yourself if the algorithm does a better job than picking at random! A chart of the user's monthly average sentiment and top 25 words are also available.</p>
-          <h3>Okay, you say "representative tweet", but what's that even mean?</h3>
-          <p>Fair question, a representative tweet in this instance is considered an summary reflection of the user's interests, attitude, and values or essentially: "Does this sound like something the user would say?".</p>
-          <h3>How did you determine these scores?</h3>
-          <p>The algorithm takes the collection of tweets, removes any retweets, then builds a word frequency and trigram frequency. Frequencies are ranked low to high and each item is assigned a value equal to its relative rank. The presence of a frequent word added more to a tweet's score, while the presence of a frequent trigram was heavily penalized. Sentiment is also taken into account by calculating an average comparative sentiment score for the collection, and reducing each tweet's score according to how far away its sentiment is to the average.</p>
-        </div>
-        <div id="selectedTweets">
-        </div>
-        <div id="randomTweets">
-        </div>
-        <div id="userAnalysis">
-          <canvas id="sentimentCanvas" class="panel"></canvas>
-          <canvas id="chartCanvas" class="panel"></canvas>
-        </div>
+        <DisplayMenu bannerText={this.state.bannerText} setDisplay={this.setDisplay} />
+        {display}
       </div>
     )
   }
