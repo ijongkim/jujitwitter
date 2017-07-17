@@ -6,6 +6,9 @@ import Menu from './Menu.jsx'
 import Display from './Display.jsx'
 import request from 'superagent'
 import utils from './../clientUtils.js'
+import io from 'socket.io-client'
+
+let socket = io()
 
 export default class App extends React.Component {
   constructor (props) {
@@ -21,7 +24,8 @@ export default class App extends React.Component {
       stats: {
         frequency: [],
         sentiment: []
-      }
+      },
+      socketID: ''
     }
     this.bannerTexts = {
       welcome: 'Welcome to Top 10 Tweets!',
@@ -58,6 +62,7 @@ export default class App extends React.Component {
   }
 
   fetchTweets (username, callback) {
+    console.log('socket', this.state.socket_id)
     username = utils.cleanUsername(username, 15)
     if (username === '') {
       // TODO handle error
@@ -67,7 +72,7 @@ export default class App extends React.Component {
       this.loadingUser(username)
       request
       .post('/getTweets')
-      .send({username: username})
+      .send({username: username, socket: socket.id})
       .end(function (err, res) {
         if (err) {
           console.log(err)
@@ -118,6 +123,12 @@ export default class App extends React.Component {
         this.fetchTweets(this.state.username, this.updateResults)
       }
     }.bind(this))
+    socket.on('socketID', (data) => {
+      this.setState({socketID: data})
+    })
+    socket.on('userReceived', (data) => {
+      this.setState({user: data})
+    })
   }
 
   render () {

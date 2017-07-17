@@ -4,7 +4,7 @@ const stopWords = require('./stopwords.js')
 const sentiment = require('./sentiment/lib/index.js')
 const useStop = stopWords.std
 
-function getTweets (token, username, list, currCount, maxCount, maxID, callback, errorHandle) {
+function getTweets (token, username, list, currCount, maxCount, maxID, callback, errorHandle, socket) {
   let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&exclude_replies=true&include_rts=false'
   url += maxID ? '&max_id=' + maxID.toString() : ''
   let options = {
@@ -12,6 +12,9 @@ function getTweets (token, username, list, currCount, maxCount, maxID, callback,
     headers: {
       'Authorization': 'Bearer ' + token
     }
+  }
+  if (socket) {
+    console.log('socketID', socket)
   }
   if (currCount > maxCount) {
     console.log('Starting processing')

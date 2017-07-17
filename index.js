@@ -1,9 +1,11 @@
 const express = require('express')
+const app = express()
+const server = require('http').Server(app)
 const dotenv = require('dotenv').config()
 const request = require('request')
 const bodyParser = require('body-parser')
 const utils = require('./utils.js')
-const app = express()
+const io = require('socket.io')(server)
 
 const tKey = process.env.KEY
 const tSecret = process.env.SECRET
@@ -40,20 +42,24 @@ function setToken (token) {
 
 getBearerToken(tBase)
 
-
 app.use(bodyParser.json())
 app.use(express.static('client'))
 
 app.post('/getTweets', function (req, res) {
   if (storedToken) {
     console.log('Requesting with token:', storedToken)
-    utils.getTweets(storedToken, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, true, function (data) { res.send(data) }) }, function (data) { res.send(data) })
+    utils.getTweets(storedToken, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, true, function (data) { res.send(data) }) }, function (data) { res.send(data) }, req.body.socket)
   } else {
     console.log('Requesting token...')
-    getBearerToken(tBase, function (token) { utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, true, function (data) { res.send(data) }) }, function (data) { res.send(data) }) })
+    getBearerToken(tBase, function (token) { utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, true, function (data) { res.send(data) }) }, function (data) { res.send(data) }, req.body.socket) })
   }
 })
 
-app.listen(process.env.PORT, function () {
+io.on('connection', function (socket) {
+  console.log('connected', socket.id)
+  socket.emit('socketID', socket.id)
+})
+
+server.listen(process.env.PORT, function () {
   console.log('Server running on', process.env.PORT)
 })
