@@ -6819,6 +6819,10 @@ button.close {
   margin: auto;
 }
 
+#displayMenu {
+  margin-bottom: 10px;
+}
+
 #selectedTweets .tweetContainer:last-child, #randomTweets .tweetContainer:last-child, #userAnalysis .tweetContainer:last-child {
   margin-bottom: 0;
 }

@@ -12,7 +12,7 @@ export default class App extends React.Component {
     super(props)
     this.state = {
       username: '',
-      bannerText: 'Welcome to Top 10 Tweets!', 
+      bannerText: 'Welcome to Top 10 Tweets!',
       currentDisplay: 'welcome',
       loading: false,
       user: {},
@@ -27,12 +27,14 @@ export default class App extends React.Component {
       welcome: 'Welcome to Top 10 Tweets!',
       selected: 'Top 10 Tweets',
       random: '10 Random Tweets',
-      analysis: 'User Analysis'
+      analysis: 'User Analysis',
+      loading: 'Welcome to Top 10 Tweets!'
     }
     this.setDisplay = this.setDisplay.bind(this)
     this.handleInputChange = this.handleInputChange.bind(this)
     this.clearInput = this.clearInput.bind(this)
     this.fetchTweets = this.fetchTweets.bind(this)
+    this.loadingUser = this.loadingUser.bind(this)
     this.updateResults = this.updateResults.bind(this)
   }
 
@@ -55,23 +57,14 @@ export default class App extends React.Component {
     })
   }
 
-  updateResults (results) {
-    this.setState({
-      user: results.selected[0].user,
-      selected: results.selected,
-      random: results.random,
-      stats: results.stats,
-      bannerText: this.bannerTexts.selected,
-      currentDisplay: 'selected'
-    })
-  }
-
   fetchTweets (username, callback) {
     username = utils.cleanUsername(username, 15)
     if (username === '') {
       // TODO handle error
       console.log('Must enter a valid username')
     } else {
+      this.setDisplay('loading')
+      this.loadingUser(username)
       request
       .post('/getTweets')
       .send({username: username})
@@ -85,6 +78,37 @@ export default class App extends React.Component {
       })
     }
     this.clearInput()
+  }
+
+  loadingUser (username) {
+    const loading = 'loading...'
+    this.setState({user: {
+      id_str: '1',
+      profile_image_url: '/loader.gif',
+      profile_image_url_https: '/loader.gif',
+      entities: {
+        url: {
+          urls: [{expanded_url: '#', display_url: loading}]
+        }
+      },
+      name: loading,
+      screen_name: loading,
+      description: loading,
+      location: loading,
+      followers_count: 999999999,
+      friends_count: 999999999
+    }})
+  }
+
+  updateResults (results) {
+    this.setState({
+      user: results.selected[0].user,
+      selected: results.selected,
+      random: results.random,
+      stats: results.stats,
+      bannerText: this.bannerTexts.selected,
+      currentDisplay: 'selected'
+    })
   }
 
   componentDidMount () {

@@ -15,7 +15,7 @@ export default class UserProfile extends React.Component {
           <div className="userStats col-xs-8">
             <h2>{user.name}</h2>
             <span dangerouslySetInnerHTML={{__html: utils.parseTweet('@' + user.screen_name, true)}}></span>
-            <span className="glyphicon glyphicon-user" aria-hidden="true" /> {utils.parseTweet(user.description)}<br />
+            <span className="glyphicon glyphicon-user" aria-hidden="true" /> <span dangerouslySetInnerHTML={{__html: utils.parseTweet(user.description)}}></span><br />
             <span className="glyphicon glyphicon-map-marker" aria-hidden="true" /> {user.location}<br />
             <span className="glyphicon glyphicon-bullhorn" aria-hidden="true" /> {utils.addCommas(user.followers_count)}<br />
             <span className="glyphicon glyphicon-search" aria-hidden="true" /> {utils.addCommas(user.friends_count)}<br />

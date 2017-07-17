@@ -2,6 +2,7 @@ import React from 'react'
 import DisplayMenu from './DisplayMenu.jsx'
 import WelcomePanel from './WelcomePanel.jsx'
 import TweetList from './TweetList.jsx'
+import LoadingPanel from './LoadingPanel.jsx'
 
 export default class Display extends React.Component {
   renderDisplay (section) {
@@ -13,6 +14,8 @@ export default class Display extends React.Component {
       return <TweetList tweets={this.props.random} />
     } else if (section === 'analysis') {
       return <h1>ANALYSIS</h1>
+    } else if (section === 'loading') {
+      return <LoadingPanel />
     }
   }
 
