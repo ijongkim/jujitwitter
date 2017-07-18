@@ -3,8 +3,13 @@ const request = require('request')
 const stopWords = require('./stopwords.js')
 const sentiment = require('./sentiment/lib/index.js')
 const useStop = stopWords.std
+const io = require('./index.js').io
 
-function getTweets (token, username, list, currCount, maxCount, maxID, callback, errorHandle, socket) {
+function updateClient (id, tag, data) {
+  io.to(id).emit(tag, data)
+}
+
+function getTweets (socket, token, username, list, currCount, maxCount, maxID, callback, errorHandle) {
   let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&exclude_replies=true&include_rts=false'
   url += maxID ? '&max_id=' + maxID.toString() : ''
   let options = {
@@ -13,15 +18,15 @@ function getTweets (token, username, list, currCount, maxCount, maxID, callback,
       'Authorization': 'Bearer ' + token
     }
   }
-  if (socket) {
-    console.log('socketID', socket)
-  }
   if (currCount > maxCount) {
     console.log('Starting processing')
-    callback(list)
+    updateClient(socket, 'loadingData', {text: `All done!`, progress: 100})
+    callback(list, socket)
   } else {
-    let id = maxID ? maxID.toString() : ''
-    console.log('Getting tweets', currCount, '-', currCount + 200, 'of', maxCount, 'for', username, 'from ID:', id)
+    if (currCount === 0) {
+      console.log('Fetching', username)
+      updateClient(socket, 'loadingData', {text: `Fetching @${username}'s tweets...`, progress: 5})
+    }
     request(options, function (error, response, body) {
       let tweets = JSON.parse(body)
       if (!error && Array.isArray(tweets)) {
@@ -30,9 +35,12 @@ function getTweets (token, username, list, currCount, maxCount, maxID, callback,
           callback(list)
         } else {
           list = list.concat(tweets)
-          console.log(list.length, 'tweets')
-          let maxID = bignum(tweets[tweets.length - 1].id_str).sub(1)
-          getTweets(token, username, list, currCount + 200, maxCount, maxID, callback, errorHandle)
+          if (!maxID) {
+            updateClient(socket, 'userFound', {user: list[0].user})
+          }
+          updateClient(socket, 'loadingData', {text: `${list.length} tweets found...`, progress: (((currCount / 200) + 1) * 6)})
+          maxID = bignum(tweets[tweets.length - 1].id_str).sub(1)
+          getTweets(socket, token, username, list, currCount + 200, maxCount, maxID, callback, errorHandle)
         }
       } else {
         let message = 'Unspecified Error'
@@ -41,7 +49,8 @@ function getTweets (token, username, list, currCount, maxCount, maxID, callback,
         } else if (tweets.error) {
           message = tweets.error
         }
-        errorHandle(message)
+        updateClient(socket, 'loadingData', {text: message, progress: (((currCount / 200) + 1) * 6), error: true})
+        errorHandle({user: {}, selected: [], random: [], stats: {}})
       }
     })
   }
@@ -370,7 +379,7 @@ function removeRetweets (list) {
   return results
 }
 
-function processTweets (list, max, removeRTs, callback) {
+function processTweets (list, max, removeRTs, socket, callback) {
   let tweetList = removeRTs ? removeRetweets(list) : list
   console.log('Processing', tweetList.length, 'tweets...')
   let dictionary = buildDictionary(tweetList)

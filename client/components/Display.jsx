@@ -15,7 +15,7 @@ export default class Display extends React.Component {
     } else if (section === 'analysis') {
       return <h1>ANALYSIS</h1>
     } else if (section === 'loading') {
-      return <LoadingPanel />
+      return <LoadingPanel loadingData={this.props.loadingData} />
     }
   }
 

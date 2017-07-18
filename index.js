@@ -4,8 +4,9 @@ const server = require('http').Server(app)
 const dotenv = require('dotenv').config()
 const request = require('request')
 const bodyParser = require('body-parser')
-const utils = require('./utils.js')
 const io = require('socket.io')(server)
+module.exports.io = io
+const utils = require('./utils.js')
 
 const tKey = process.env.KEY
 const tSecret = process.env.SECRET
@@ -37,7 +38,7 @@ function getBearerToken (base, callback) {
 }
 
 function setToken (token) {
-  storedToken = token
+  storedToken = token + '1'
 }
 
 getBearerToken(tBase)
@@ -48,16 +49,20 @@ app.use(express.static('client'))
 app.post('/getTweets', function (req, res) {
   if (storedToken) {
     console.log('Requesting with token:', storedToken)
-    utils.getTweets(storedToken, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, true, function (data) { res.send(data) }) }, function (data) { res.send(data) }, req.body.socket)
+    utils.getTweets(req.body.socketID, storedToken, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output, socket) { utils.processTweets(output, 10, true, socket, function (data) { res.send(data) }) }, function (data) { res.send(data) })
   } else {
     console.log('Requesting token...')
-    getBearerToken(tBase, function (token) { utils.getTweets(token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output) { utils.processTweets(output, 10, true, function (data) { res.send(data) }) }, function (data) { res.send(data) }, req.body.socket) })
+    getBearerToken(tBase, function (token) { utils.getTweets(req.body.socketID, token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output, socket) { utils.processTweets(output, 10, true, socket, function (data) { res.send(data) }) }, function (data) { res.send(data) }) })
   }
 })
 
 io.on('connection', function (socket) {
   console.log('connected', socket.id)
   socket.emit('socketID', socket.id)
+})
+
+io.on('fetchUser', function (socket) {
+  console.log('fetching')
 })
 
 server.listen(process.env.PORT, function () {

@@ -25,7 +25,8 @@ export default class App extends React.Component {
         frequency: [],
         sentiment: []
       },
-      socketID: ''
+      socketID: '',
+      loadingData: {}
     }
     this.bannerTexts = {
       welcome: 'Welcome to Top 10 Tweets!',
@@ -62,7 +63,6 @@ export default class App extends React.Component {
   }
 
   fetchTweets (username, callback) {
-    console.log('socket', this.state.socket_id)
     username = utils.cleanUsername(username, 15)
     if (username === '') {
       // TODO handle error
@@ -72,7 +72,7 @@ export default class App extends React.Component {
       this.loadingUser(username)
       request
       .post('/getTweets')
-      .send({username: username, socket: socket.id})
+      .send({username: username, socketID: socket.id})
       .end(function (err, res) {
         if (err) {
           console.log(err)
@@ -124,10 +124,15 @@ export default class App extends React.Component {
       }
     }.bind(this))
     socket.on('socketID', (data) => {
+      console.log('Socket ID:', data)
       this.setState({socketID: data})
     })
-    socket.on('userReceived', (data) => {
-      this.setState({user: data})
+    socket.on('userFound', (data) => {
+      console.log('User Found:', data)
+      this.setState({user: data.user})
+    })
+    socket.on('loadingData', (data) => {
+      this.setState({loadingData: data})
     })
   }
 
@@ -135,7 +140,7 @@ export default class App extends React.Component {
     return (
       <div>
         <Menu user={this.state.user} currentDisplay={this.state.currentDisplay} handleInputChange={this.handleInputChange} buttonSubmit={function () { this.fetchTweets(this.state.username, this.updateResults) }.bind(this)} username={this.state.username} />
-        <Display bannerText={this.state.bannerText} currentDisplay={this.state.currentDisplay} setDisplay={this.setDisplay} selected={this.state.selected} random={this.state.random} analysis={this.state.analysis} />
+        <Display bannerText={this.state.bannerText} loadingData={this.state.loadingData} currentDisplay={this.state.currentDisplay} setDisplay={this.setDisplay} selected={this.state.selected} random={this.state.random} analysis={this.state.analysis} />
       </div>
     )
   }
