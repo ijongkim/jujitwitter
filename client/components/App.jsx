@@ -41,6 +41,21 @@ export default class App extends React.Component {
     this.fetchTweets = this.fetchTweets.bind(this)
     this.loadingUser = this.loadingUser.bind(this)
     this.updateResults = this.updateResults.bind(this)
+    socket.on('socketID', (data) => {
+      this.setState({socketID: data})
+    })
+    socket.on('userFound', (data) => {
+      this.setState({user: data.user})
+    })
+    socket.on('loadingData', (data) => {
+      this.setState({loadingData: data})
+    })
+    document.addEventListener("keydown", function (e) {
+      if (e.which === 13 || e.keyCode === 13) {
+        e.preventDefault()
+        this.fetchTweets(this.state.username, this.updateResults)
+      }
+    }.bind(this))
   }
 
   setDisplay (section) {
@@ -117,24 +132,6 @@ export default class App extends React.Component {
         text: '',
         progress: 0
       }
-    })
-  }
-
-  componentDidMount () {
-    document.addEventListener("keydown", function (e) {
-      if (e.which === 13 || e.keyCode === 13) {
-        e.preventDefault()
-        this.fetchTweets(this.state.username, this.updateResults)
-      }
-    }.bind(this))
-    socket.on('socketID', (data) => {
-      this.setState({socketID: data})
-    })
-    socket.on('userFound', (data) => {
-      this.setState({user: data.user})
-    })
-    socket.on('loadingData', (data) => {
-      this.setState({loadingData: data})
     })
   }
 

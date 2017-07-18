@@ -33,7 +33,7 @@ function getTweets (params, options, callback, errorHandle) {
           callback(params.list)
         } else {
           params.list = params.list.concat(tweets)
-          if (!options.maxID) {
+          if (options.maxID === null) {
             updateClient(params.socket, 'userFound', {user: params.list[0].user})
           }
           updateClient(params.socket, 'loadingData', {text: `${params.list.length} tweets found...`, progress: (((options.currCount / 200) + 1) * 6)})
