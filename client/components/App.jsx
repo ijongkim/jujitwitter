@@ -142,7 +142,7 @@ export default class App extends React.Component {
     return (
       <div>
         <Menu user={this.state.user} currentDisplay={this.state.currentDisplay} handleInputChange={this.handleInputChange} buttonSubmit={function () { this.fetchTweets(this.state.username, this.updateResults) }.bind(this)} username={this.state.username} />
-        <Display bannerText={this.state.bannerText} loadingData={this.state.loadingData} currentDisplay={this.state.currentDisplay} setDisplay={this.setDisplay} selected={this.state.selected} random={this.state.random} analysis={this.state.analysis} />
+        <Display bannerText={this.state.bannerText} loadingData={this.state.loadingData} currentDisplay={this.state.currentDisplay} setDisplay={this.setDisplay} selected={this.state.selected} random={this.state.random} analysis={this.state.analysis} stats={this.state.stats} />
       </div>
     )
   }

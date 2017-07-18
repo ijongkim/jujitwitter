@@ -3,6 +3,7 @@ import DisplayMenu from './DisplayMenu.jsx'
 import WelcomePanel from './WelcomePanel.jsx'
 import TweetList from './TweetList.jsx'
 import LoadingPanel from './LoadingPanel.jsx'
+import ChartDisplay from './ChartDisplay.jsx'
 
 export default class Display extends React.Component {
   renderDisplay (section) {
@@ -13,7 +14,7 @@ export default class Display extends React.Component {
     } else if (section === 'random') {
       return <TweetList tweets={this.props.random} />
     } else if (section === 'analysis') {
-      return <h1>ANALYSIS</h1>
+      return <ChartDisplay stats={this.props.stats} />
     } else if (section === 'loading') {
       return <LoadingPanel loadingData={this.props.loadingData} />
     }
