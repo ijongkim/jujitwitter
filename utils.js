@@ -18,10 +18,14 @@ function getTweets (params, options, callback, errorHandle) {
       'Authorization': 'Bearer ' + params.token
     }
   }
+  if (params.username === 'neiltyson') {
+    console.log(params)
+    console.log(options)
+  }
   if (options.currCount > options.maxCount) {
     console.log('Starting processing')
     updateClient(params.socket, 'loadingData', {text: `All done!`, progress: 100})
-    callback(params.list, params.socket)
+    callback(params.list)
   } else {
     if (options.currCount === 0) {
       console.log('Fetching', params.username)
@@ -36,7 +40,6 @@ function getTweets (params, options, callback, errorHandle) {
         } else {
           params.list = params.list.concat(tweets)
           if (!options.maxID) {
-            console.log(params.list[0].user)
             updateClient(params.socket, 'userFound', {user: params.list[0].user})
           }
           console.log(`${options.currCount} of ${options.maxCount}`)
@@ -382,7 +385,7 @@ function removeRetweets (list) {
   return results
 }
 
-function processTweets (list, max, removeRTs, socket, callback) {
+function processTweets (list, max, removeRTs, callback) {
   let tweetList = removeRTs ? removeRetweets(list) : list
   console.log('Processing', tweetList.length, 'tweets...')
   let dictionary = buildDictionary(tweetList)

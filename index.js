@@ -60,8 +60,8 @@ app.post('/getTweets', function (req, res) {
   }
   if (storedToken) {
     console.log('Requesting with token:', storedToken)
-    utils.getTweets(params, options, function (output, socket) {
-      utils.processTweets(output, 10, true, socket, function (data) {
+    utils.getTweets(params, options, function (output) {
+      utils.processTweets(output, 10, true, function (data) {
         res.send(data)
       })
     }, function (data) {
@@ -71,8 +71,8 @@ app.post('/getTweets', function (req, res) {
     console.log('Requesting token...')
     getBearerToken(tBase, function (token) {
       params.token = token
-      utils.getTweets(params, options, function (output, socket) {
-        utils.processTweets(output, 10, true, socket, function (data) {
+      utils.getTweets(params, options, function (output) {
+        utils.processTweets(output, 10, true, function (data) {
           res.send(data)
         })
       }, function (data) {

@@ -128,15 +128,12 @@ export default class App extends React.Component {
       }
     }.bind(this))
     socket.on('socketID', (data) => {
-      console.log('Socket ID:', data)
       this.setState({socketID: data})
     })
     socket.on('userFound', (data) => {
-      console.log('User Found:', data.user)
       this.setState({user: data.user})
     })
     socket.on('loadingData', (data) => {
-      console.log(data)
       this.setState({loadingData: data})
     })
   }
