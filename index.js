@@ -38,7 +38,7 @@ function getBearerToken (base, callback) {
 }
 
 function setToken (token) {
-  storedToken = token + '1'
+  storedToken = token
 }
 
 getBearerToken(tBase)
