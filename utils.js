@@ -9,38 +9,41 @@ function updateClient (id, tag, data) {
   io.to(id).emit(tag, data)
 }
 
-function getTweets (socket, token, username, list, currCount, maxCount, maxID, callback, errorHandle) {
-  let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&exclude_replies=true&include_rts=false'
-  url += maxID ? '&max_id=' + maxID.toString() : ''
-  let options = {
+function getTweets (params, options, callback, errorHandle) {
+  let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + params.username + '&exclude_replies=true&include_rts=false'
+  url += options.maxID ? '&max_id=' + options.maxID.toString() : ''
+  let reqOptions = {
     url: url,
     headers: {
-      'Authorization': 'Bearer ' + token
+      'Authorization': 'Bearer ' + params.token
     }
   }
-  if (currCount > maxCount) {
+  if (options.currCount > options.maxCount) {
     console.log('Starting processing')
-    updateClient(socket, 'loadingData', {text: `All done!`, progress: 100})
-    callback(list, socket)
+    updateClient(params.socket, 'loadingData', {text: `All done!`, progress: 100})
+    callback(params.list, params.socket)
   } else {
-    if (currCount === 0) {
-      console.log('Fetching', username)
-      updateClient(socket, 'loadingData', {text: `Fetching @${username}'s tweets...`, progress: 5})
+    if (options.currCount === 0) {
+      console.log('Fetching', params.username)
+      updateClient(params.socket, 'loadingData', {text: `Fetching @${params.username}'s tweets...`, progress: 5})
     }
-    request(options, function (error, response, body) {
+    request(reqOptions, function (error, response, body) {
       let tweets = JSON.parse(body)
       if (!error && Array.isArray(tweets)) {
         if (tweets.length === 0) {
           console.log('Starting processing')
-          callback(list)
+          callback(params.list)
         } else {
-          list = list.concat(tweets)
-          if (!maxID) {
-            updateClient(socket, 'userFound', {user: list[0].user})
+          params.list = params.list.concat(tweets)
+          if (!options.maxID) {
+            console.log(params.list[0].user)
+            updateClient(params.socket, 'userFound', {user: params.list[0].user})
           }
-          updateClient(socket, 'loadingData', {text: `${list.length} tweets found...`, progress: (((currCount / 200) + 1) * 6)})
-          maxID = bignum(tweets[tweets.length - 1].id_str).sub(1)
-          getTweets(socket, token, username, list, currCount + 200, maxCount, maxID, callback, errorHandle)
+          console.log(`${options.currCount} of ${options.maxCount}`)
+          updateClient(params.socket, 'loadingData', {text: `${params.list.length} tweets found...`, progress: (((options.currCount / 200) + 1) * 6)})
+          options.maxID = bignum(tweets[tweets.length - 1].id_str).sub(1)
+          options.currCount += 200
+          getTweets(params, options, callback, errorHandle)
         }
       } else {
         let message = 'Unspecified Error'
@@ -49,7 +52,7 @@ function getTweets (socket, token, username, list, currCount, maxCount, maxID, c
         } else if (tweets.error) {
           message = tweets.error
         }
-        updateClient(socket, 'loadingData', {text: message, progress: (((currCount / 200) + 1) * 6), error: true})
+        updateClient(params.socket, 'loadingData', {text: message, progress: (((options.currCount / 200) * 6)), error: true})
         errorHandle({user: {}, selected: [], random: [], stats: {}})
       }
     })

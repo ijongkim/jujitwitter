@@ -47,12 +47,38 @@ app.use(bodyParser.json())
 app.use(express.static('client'))
 
 app.post('/getTweets', function (req, res) {
+  let params = {
+    socket: req.body.socketID,
+    token: storedToken || '',
+    username: utils.cleanUsername(req.body.username, 15),
+    list: []
+  }
+  let options = {
+    currCount: 0,
+    maxCount: 3200,
+    maxID: null
+  }
   if (storedToken) {
     console.log('Requesting with token:', storedToken)
-    utils.getTweets(req.body.socketID, storedToken, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output, socket) { utils.processTweets(output, 10, true, socket, function (data) { res.send(data) }) }, function (data) { res.send(data) })
+    utils.getTweets(params, options, function (output, socket) {
+      utils.processTweets(output, 10, true, socket, function (data) {
+        res.send(data)
+      })
+    }, function (data) {
+      res.send(data)
+    })
   } else {
     console.log('Requesting token...')
-    getBearerToken(tBase, function (token) { utils.getTweets(req.body.socketID, token, utils.cleanUsername(req.body.username, 15), [], 0, 3200, null, function (output, socket) { utils.processTweets(output, 10, true, socket, function (data) { res.send(data) }) }, function (data) { res.send(data) }) })
+    getBearerToken(tBase, function (token) {
+      params.token = token
+      utils.getTweets(params, options, function (output, socket) {
+        utils.processTweets(output, 10, true, socket, function (data) {
+          res.send(data)
+        })
+      }, function (data) {
+        res.send(data)
+      })
+    })
   }
 })
 

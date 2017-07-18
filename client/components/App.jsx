@@ -112,7 +112,11 @@ export default class App extends React.Component {
       random: results.random,
       stats: results.stats,
       bannerText: this.bannerTexts.selected,
-      currentDisplay: 'selected'
+      currentDisplay: 'selected',
+      loadingData: {
+        text: '',
+        progress: 0
+      }
     })
   }
 
@@ -128,10 +132,11 @@ export default class App extends React.Component {
       this.setState({socketID: data})
     })
     socket.on('userFound', (data) => {
-      console.log('User Found:', data)
+      console.log('User Found:', data.user)
       this.setState({user: data.user})
     })
     socket.on('loadingData', (data) => {
+      console.log(data)
       this.setState({loadingData: data})
     })
   }
