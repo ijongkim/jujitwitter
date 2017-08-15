@@ -5,3 +5,6 @@ node_modules/*
 
 # Env file
 .env
+
+# Don't save bundle.js
+client/bundle.js

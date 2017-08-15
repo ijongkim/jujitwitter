@@ -3,33 +3,43 @@ const request = require('request')
 const stopWords = require('./stopwords.js')
 const sentiment = require('./sentiment/lib/index.js')
 const useStop = stopWords.std
+const io = require('./index.js').io
 
-function getTweets (token, username, list, currCount, maxCount, maxID, callback, errorHandle) {
-  let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + username + '&exclude_replies=true&include_rts=false'
-  url += maxID ? '&max_id=' + maxID.toString() : ''
-  let options = {
+function updateClient (id, tag, data) {
+  io.to(id).emit(tag, data)
+}
+
+function getTweets (params, options, callback, errorHandle) {
+  let url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?count=200&screen_name=' + params.username + '&exclude_replies=true&include_rts=false'
+  url += options.maxID ? '&max_id=' + options.maxID.toString() : ''
+  let reqOptions = {
     url: url,
     headers: {
-      'Authorization': 'Bearer ' + token
+      'Authorization': 'Bearer ' + params.token
     }
   }
-  if (currCount > maxCount) {
-    console.log('Starting processing')
-    callback(list)
+  if (options.currCount > options.maxCount) {
+    updateClient(params.socket, 'loadingData', {text: `All done!`, progress: 100})
+    callback(params.list)
   } else {
-    let id = maxID ? maxID.toString() : ''
-    console.log('Getting tweets', currCount, '-', currCount + 200, 'of', maxCount, 'for', username, 'from ID:', id)
-    request(options, function (error, response, body) {
+    if (options.currCount === 0) {
+      console.log('Fetching', params.username)
+      updateClient(params.socket, 'loadingData', {text: `Fetching @${params.username}'s tweets...`, progress: 5})
+    }
+    request(reqOptions, function (error, response, body) {
       let tweets = JSON.parse(body)
       if (!error && Array.isArray(tweets)) {
         if (tweets.length === 0) {
-          console.log('Starting processing')
-          callback(list)
+          callback(params.list)
         } else {
-          list = list.concat(tweets)
-          console.log(list.length, 'tweets')
-          let maxID = bignum(tweets[tweets.length - 1].id_str).sub(1)
-          getTweets(token, username, list, currCount + 200, maxCount, maxID, callback, errorHandle)
+          params.list = params.list.concat(tweets)
+          if (options.maxID === null) {
+            updateClient(params.socket, 'userFound', {user: params.list[0].user})
+          }
+          updateClient(params.socket, 'loadingData', {text: `${params.list.length} tweets found...`, progress: (((options.currCount / 200) + 1) * 6)})
+          options.maxID = bignum(tweets[tweets.length - 1].id_str).sub(1)
+          options.currCount += 200
+          getTweets(params, options, callback, errorHandle)
         }
       } else {
         let message = 'Unspecified Error'
@@ -38,7 +48,8 @@ function getTweets (token, username, list, currCount, maxCount, maxID, callback,
         } else if (tweets.error) {
           message = tweets.error
         }
-        errorHandle(message)
+        updateClient(params.socket, 'loadingData', {text: message, progress: (((options.currCount / 200) * 6)), error: true})
+        errorHandle({user: {}, selected: [], random: [], stats: {}})
       }
     })
   }
@@ -158,7 +169,6 @@ function buildDictionary (tweetList) {
   }
   dictionary.sentiment.avgSentiment = totalSentiment / tweetCount
   dictionary.sentiment.avgCompSentiment = totalCompSentiment / tweetCount
-  console.log('Dictionary built')
   return dictionary
 }
 
@@ -180,7 +190,6 @@ function createScores (dictionary) {
   for (let i = 0; i < countsLength; i++) {
     countsHash[counts[i]] = i
   }
-  console.log('Scores created')
   return countsHash
 }
 
@@ -223,7 +232,6 @@ function scoreTweets (scores, dictionary, tweets, grams, avgSent, avgCompSent) {
       setScore(scores, dictionary, tweets[i], avgSent, avgCompSent)
     }
   }
-  console.log('Scores calculated')
 }
 
 function sortTweets (tweets) {
@@ -242,7 +250,6 @@ function printTweets (tweets, count) {
 }
 
 function randomTweets (tweets, count) {
-  console.log('Selecting random tweets')
   let limit = count > tweets.length ? Math.min(tweets.length, 10) : count
   let selected = {}
   let results = []
@@ -322,7 +329,7 @@ function sentimentTimeline (tweets) {
     var sum = groups[date].reduce(function (sum, value) {
       return sum + value
     }, 0)
-    results.push([date, sum / groups[date].length])
+    results.push([date, (sum / groups[date].length).toFixed(2)])
   }
   results.sort(function (a, b) {
     let aDate = a[0].split('-')
