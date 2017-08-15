@@ -1,5 +1,5 @@
 {
-  "name": "jujitwitter",
+  "name": "toptentweets",
   "version": "1.0.0",
   "description": "Pull the Top 10 representative tweets of a given Twitter user",
   "main": "node index.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ijongkim/jujitwitter.git"
+    "url": "git+https://github.com/ijongkim/toptentweets.git"
   },
   "keywords": [
     "twitter"
