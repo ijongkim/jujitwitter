@@ -1,5 +1,5 @@
 {
-  "name": "jujitwitter",
+  "name": "toptentweets",
   "version": "1.0.0",
   "description": "Pull the Top 10 representative tweets of a given Twitter user",
   "main": "node index.js",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ijongkim/jujitwitter.git"
+    "url": "git+https://github.com/ijongkim/toptentweets.git"
   },
   "keywords": [
     "twitter"
@@ -20,9 +20,9 @@
   "author": "Innie Kim",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ijongkim/jujitwitter/issues"
+    "url": "https://github.com/ijongkim/toptentweets/issues"
   },
-  "homepage": "https://github.com/ijongkim/jujitwitter#readme",
+  "homepage": "https://github.com/ijongkim/toptentweets#readme",
   "dependencies": {
     "bignum": "^0.12.5",
     "body-parser": "^1.17.2",
