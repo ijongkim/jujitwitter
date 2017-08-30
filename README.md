@@ -15,3 +15,5 @@ Fair question, a representative tweet in this instance is considered an summary 
 
 ## How did you determine these scores?
 The algorithm takes the collection of tweets, removes any retweets, then builds a word frequency and trigram frequency. Frequencies are ranked low to high and each item is assigned a value equal to its relative rank. The presence of a frequent word added more to a tweet's score, while the presence of a frequent trigram was heavily penalized. Sentiment is also taken into account by calculating an average comparative sentiment score for the collection, and reducing each tweet's score according to how far away its sentiment is to the average.
+
+## Updates
